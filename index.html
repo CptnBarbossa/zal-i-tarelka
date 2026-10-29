@@ -43,6 +43,7 @@ h2{font-family:var(--font-d);font-weight:600;font-size:20px;letter-spacing:.01em
 h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
 .num{font-family:var(--font-d);font-variant-numeric:tabular-nums}
 button,input,select{font:inherit;color:inherit}
+button,label,a{touch-action:manipulation}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 a{color:var(--blue)}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;display:grid;gap:10px}
@@ -67,7 +68,7 @@ main section{display:grid;gap:12px}
 .c-red{background:var(--red)}.c-blue{background:var(--blue)}.c-yellow{background:var(--yellow)}.c-green{background:var(--green)}.c-ink{background:var(--ink)}
 .field{display:grid;gap:4px;min-width:0}
 .field label,.lbl{font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
-input,select{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;width:100%;min-width:0}
+input,select{font-size:16px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;width:100%;min-width:0}
 input[type="checkbox"]{width:22px;height:22px;padding:0;margin:0;accent-color:var(--ink);flex:none}
 .check{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -143,7 +144,7 @@ svg .val{fill:var(--fg);font-weight:600}
 .raw{fill:var(--muted);opacity:.55}
 .chart{overflow-x:auto}
 .chart svg{display:block;width:100%;height:auto;min-width:300px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
+.toast{pointer-events:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
 .restbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--on-ink);
   padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .restin{max-width:560px;margin:0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
@@ -188,7 +189,7 @@ svg .val{fill:var(--fg);font-weight:600}
 .steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
 #logCard{scroll-margin-top:140px}
 @media (prefers-reduced-motion: no-preference){.track i,.vol .fill{transition:width .35s ease}}
-@media (max-width:400px){.macro{grid-template-columns:80px minmax(0,1fr) 84px}.big{font-size:38px}.vol{grid-template-columns:56px minmax(0,1fr) 38px 84px;gap:8px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.opts{grid-template-columns:1fr}}
+@media (max-width:400px){#logCard .grid2{grid-template-columns:1fr}.stepper input{padding:0 4px}.macro{grid-template-columns:92px minmax(0,1fr) auto}.big{font-size:38px}.vol{grid-template-columns:56px minmax(0,1fr) 38px 84px;gap:8px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.opts{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -232,17 +233,17 @@ svg .val{fill:var(--fg);font-weight:600}
         </div>
         <div id="customFields" class="grid2" hidden>
           <div class="field" style="grid-column:1/-1"><label for="cName">Название</label><input id="cName" placeholder="Сырники домашние" autocomplete="off"></div>
-          <div class="field"><label for="cK">Ккал на 100 г</label><input id="cK" type="number" inputmode="decimal" min="0" placeholder="220"></div>
-          <div class="field"><label for="cP">Белок на 100 г</label><input id="cP" type="number" inputmode="decimal" min="0" placeholder="15"></div>
-          <div class="field"><label for="cC">Углеводы на 100 г</label><input id="cC" type="number" inputmode="decimal" min="0" placeholder="20"></div>
-          <div class="field"><label for="cF">Жиры на 100 г</label><input id="cF" type="number" inputmode="decimal" min="0" placeholder="9"></div>
+          <div class="field"><label for="cK">Ккал на 100 г</label><input id="cK" type="text" inputmode="decimal" autocomplete="off" min="0" placeholder="220"></div>
+          <div class="field"><label for="cP">Белок на 100 г</label><input id="cP" type="text" inputmode="decimal" autocomplete="off" min="0" placeholder="15"></div>
+          <div class="field"><label for="cC">Углеводы на 100 г</label><input id="cC" type="text" inputmode="decimal" autocomplete="off" min="0" placeholder="20"></div>
+          <div class="field"><label for="cF">Жиры на 100 г</label><input id="cF" type="text" inputmode="decimal" autocomplete="off" min="0" placeholder="9"></div>
           <label class="check" style="grid-column:1/-1"><input type="checkbox" id="cSave" checked> Запомнить в «Мои продукты»</label>
           <span class="small muted" style="grid-column:1/-1">Знаешь только калории порции? Поставь 100 г и впиши данные всей порции.</span>
         </div>
         <div class="grid2">
           <div class="field"><label for="slot">Приём</label>
             <select id="slot"><option>Завтрак</option><option>Обед</option><option>Перекус</option><option>Ужин</option></select></div>
-          <div class="field"><label for="grams">Граммы или мл</label><input id="grams" type="number" inputmode="decimal" min="1" value="150"></div>
+          <div class="field"><label for="grams">Граммы или мл</label><input id="grams" type="text" inputmode="decimal" autocomplete="off" min="1" value="150"></div>
         </div>
         <div id="foodPreview" class="hint"></div>
         <p id="foodErr" class="err" hidden></p>
@@ -287,7 +288,7 @@ svg .val{fill:var(--fg);font-weight:600}
         <div id="lastTime" class="hint"></div>
         <div class="grid2">
           <div class="field"><label for="w">Вес, кг</label>
-            <div class="stepper"><button type="button" data-step="w:-2.5" aria-label="Минус 2,5 кг">−</button><input id="w" type="number" inputmode="decimal" min="0" step="0.5" value="40"><button type="button" data-step="w:2.5" aria-label="Плюс 2,5 кг">+</button></div>
+            <div class="stepper"><button type="button" data-step="w:-2.5" aria-label="Минус 2,5 кг">−</button><input id="w" type="text" inputmode="decimal" autocomplete="off" min="0" step="0.5" value="40"><button type="button" data-step="w:2.5" aria-label="Плюс 2,5 кг">+</button></div>
           </div>
           <div class="field"><label for="r">Повторы</label>
             <div class="stepper"><button type="button" data-step="r:-1" aria-label="Минус повтор">−</button><input id="r" type="number" inputmode="numeric" min="1" step="1" value="10"><button type="button" data-step="r:1" aria-label="Плюс повтор">+</button></div>
@@ -313,7 +314,7 @@ svg .val{fill:var(--fg);font-weight:600}
       <div class="card">
         <div class="row"><h2>Вес тела</h2><span id="bwTrend" class="small muted num"></span></div>
         <div class="grid2" style="grid-template-columns:minmax(0,1fr) auto;align-items:end">
-          <div class="field"><label for="bw">Вес за этот день, кг</label><input id="bw" type="number" inputmode="decimal" min="25" max="300" step="0.1" placeholder="72,5"></div>
+          <div class="field"><label for="bw">Вес за этот день, кг</label><input id="bw" type="text" inputmode="decimal" autocomplete="off" min="25" max="300" step="0.1" placeholder="72,5"></div>
           <button class="btn" id="bwSave" type="button">Записать</button>
         </div>
         <p id="bwErr" class="err" hidden></p>
@@ -348,7 +349,7 @@ svg .val{fill:var(--fg);font-weight:600}
         <div class="grid3">
           <div class="field"><label for="pAge">Возраст</label><input id="pAge" type="number" inputmode="numeric" min="14" max="90" placeholder="22"></div>
           <div class="field"><label for="pH">Рост, см</label><input id="pH" type="number" inputmode="numeric" min="120" max="230" placeholder="180"></div>
-          <div class="field"><label for="pW">Вес, кг</label><input id="pW" type="number" inputmode="decimal" min="35" max="250" step="0.1" placeholder="75"></div>
+          <div class="field"><label for="pW">Вес, кг</label><input id="pW" type="text" inputmode="decimal" autocomplete="off" min="35" max="250" step="0.1" placeholder="75"></div>
         </div>
         <div class="field"><label for="pAct">Активность вне зала</label>
           <select id="pAct"><option value="1.2">Сидячая: учёба, офис, мало шагов</option><option value="1.375">Немного ходьбы, 5–8 тыс. шагов</option><option value="1.55">Много хожу или работа на ногах</option><option value="1.725">Тяжёлая физическая работа</option></select></div>
@@ -359,9 +360,9 @@ svg .val{fill:var(--fg);font-weight:600}
           <span class="small muted">Отметь всё, что есть. Стул, стол, диван и полотенце считаются по умолчанию.</span></div>
         <div class="field"><span class="lbl">Замеры для оценки жира, необязательно</span>
           <div class="grid3">
-            <div class="field"><label for="pWaist">Талия, см</label><input id="pWaist" type="number" inputmode="decimal" min="40" max="200" placeholder="82"></div>
-            <div class="field"><label for="pNeck">Шея, см</label><input id="pNeck" type="number" inputmode="decimal" min="20" max="70" placeholder="38"></div>
-            <div class="field" id="pHipF"><label for="pHip">Бёдра, см</label><input id="pHip" type="number" inputmode="decimal" min="50" max="200" placeholder="96"></div>
+            <div class="field"><label for="pWaist">Талия, см</label><input id="pWaist" type="text" inputmode="decimal" autocomplete="off" min="40" max="200" placeholder="82"></div>
+            <div class="field"><label for="pNeck">Шея, см</label><input id="pNeck" type="text" inputmode="decimal" autocomplete="off" min="20" max="70" placeholder="38"></div>
+            <div class="field" id="pHipF"><label for="pHip">Бёдра, см</label><input id="pHip" type="text" inputmode="decimal" autocomplete="off" min="50" max="200" placeholder="96"></div>
           </div>
           <span class="small muted">Талию меряй на уровне пупка на выдохе, шею — под кадыком, бёдра — по самой широкой части.</span></div>
       </form>
@@ -629,13 +630,14 @@ const r1=n=>Math.round(n*10)/10;
 const uidGen=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const clone=o=>JSON.parse(JSON.stringify(o));
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dec=v=>v===''||v==null?'':String(v).replace('.',',');
 const numIn=v=>{const n=+String(v).replace(',','.');return isFinite(n)?n:NaN;};
 function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dateOf(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);}
 function addDays(k,n){const d=dateOf(k);d.setDate(d.getDate()+n);return keyOf(d);}
 function plural(n,f){const a=n%10,b=n%100;return a===1&&b!==11?f[0]:a>=2&&a<=4&&(b<10||b>=20)?f[1]:f[2];}
 const dlShort=k=>dateOf(k).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
-const TODAY=keyOf(new Date());
+let TODAY=keyOf(new Date());
 
 let days={},settings=clone(DEF),cur=TODAY,mode='loading',db=null,base='',loaded=false;
 let tab='food',group='Грудь',selRir=null;
@@ -652,6 +654,7 @@ function exMeta(name){const comp=COMPOUND.has(name)||isBarbell(name);const bw=ty
 function latestWeight(k){const ks=Object.keys(days).filter(x=>x<=k&&days[x].weight>0).sort();return ks.length?days[ks[ks.length-1]].weight:null;}
 function slotNow(){const h=new Date().getHours();return h<11?'Завтрак':h<16?'Обед':h<18?'Перекус':'Ужин';}
 const isFocus=g=>((settings.profile&&settings.profile.focus)||[]).includes(g);
+const volLo=(g,f)=>f?(g==='Пресс'?12:14):(g==='Пресс'?8:10);
 const myFoods=()=>settings.foods||[];
 
 /* ---------- storage ---------- */
@@ -824,9 +827,9 @@ function editMeal(id){
   openSheet(`<h2>Исправить запись</h2>
     <div class="field"><label for="eName">Название</label><input id="eName" value="${esc(m.name)}"></div>
     <div class="grid2"><div class="field"><label for="eSlot">Приём</label><select id="eSlot">${SLOTS.map(s=>`<option${s===(m.slot||'Перекус')?' selected':''}>${s}</option>`).join('')}</select></div>
-    <div class="field"><label for="eG">Граммы</label><input id="eG" type="number" inputmode="decimal" min="1" value="${m.grams||''}"></div></div>
+    <div class="field"><label for="eG">Граммы</label><input id="eG" type="text" inputmode="decimal" autocomplete="off" min="1" value="${m.grams||''}"></div></div>
     ${hasBase?`<div class="hint" id="ePrev"></div><span class="small muted">БЖУ пересчитаются по граммам. Чтобы поправить сами цифры, удали запись и добавь своё блюдо.</span>`
-    :`<div class="grid2"><div class="field"><label for="eK">Ккал</label><input id="eK" type="number" inputmode="decimal" value="${m.kcal}"></div><div class="field"><label for="eP">Белок, г</label><input id="eP" type="number" inputmode="decimal" value="${m.p}"></div><div class="field"><label for="eC">Углеводы, г</label><input id="eC" type="number" inputmode="decimal" value="${m.c}"></div><div class="field"><label for="eF">Жиры, г</label><input id="eF" type="number" inputmode="decimal" value="${m.f}"></div></div>`}
+    :`<div class="grid2"><div class="field"><label for="eK">Ккал</label><input id="eK" type="text" inputmode="decimal" autocomplete="off" value="${m.kcal}"></div><div class="field"><label for="eP">Белок, г</label><input id="eP" type="text" inputmode="decimal" autocomplete="off" value="${m.p}"></div><div class="field"><label for="eC">Углеводы, г</label><input id="eC" type="text" inputmode="decimal" autocomplete="off" value="${m.c}"></div><div class="field"><label for="eF">Жиры, г</label><input id="eF" type="text" inputmode="decimal" autocomplete="off" value="${m.f}"></div></div>`}
     <p class="err" id="eErr" hidden></p>
     <div class="grid2"><button type="button" class="btn ghost warn" id="eDel">Удалить</button><button type="button" class="btn" id="eSave">Сохранить</button></div>`);
   const upd=()=>{if(!hasBase)return;const g=numIn($('eG').value)||0,k=g/100;$('ePrev').innerHTML=`<b>${fmt(m.base.k*k)} ккал</b><span class="muted">Б ${fmt1(m.base.p*k)} · У ${fmt1(m.base.c*k)} · Ж ${fmt1(m.base.f*k)}</span>`;};
@@ -846,7 +849,7 @@ function editMeal(id){
 }
 $('clearFood').onclick=()=>confirmAsk('Очистить еду за день?','Удалятся все записи еды за '+(cur===TODAY?'сегодня':dlShort(cur))+'. Вода, сон и тренировка останутся.','Очистить',()=>{mutateDay(cur,d=>d.meals=[]);toast('Еда за день очищена');});
 $('water').addEventListener('click',e=>{const n=+e.target.closest('[data-water]')?.dataset.water;if(!n)return;mutateDay(cur,d=>d.water=(d.water===n?n-1:n));});
-document.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{const s=+b.dataset.sleep;mutateDay(cur,d=>{if(d.sleep==null)d.sleep=7;else d.sleep=Math.min(14,Math.max(0,d.sleep+s));});});
+document.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{const s=+b.dataset.sleep;mutateDay(cur,d=>{if(d.sleep==null)d.sleep=s>0?7:6.5;else d.sleep=Math.min(14,Math.max(0,d.sleep+s));});});
 
 /* ---------- gym ---------- */
 function exercisesFor(g){
@@ -904,15 +907,15 @@ function exChange(prefill){
   $('lastTime').innerHTML=html;
   if(prefill&&name){
     const todays=getDay(cur).sets.filter(s=>s.ex===name);const p=planFor(name);
-    if(todays.length){const s=todays[todays.length-1];$('w').value=s.w;$('r').value=s.r;}
-    else if(p){$('w').value=p.w;$('r').value=p.r;}
+    if(todays.length){const s=todays[todays.length-1];$('w').value=dec(s.w);$('r').value=s.r;}
+    else if(p){$('w').value=dec(p.w);$('r').value=p.r;}
     else if(meta.bw){$('w').value=0;$('r').value=meta.lo;}
   }
   renderPlates();
 }
 $('ex').addEventListener('change',()=>exChange(true));
 $('customEx').addEventListener('input',()=>exChange(false));
-document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const [f,s]=b.dataset.step.split(':');const el=$(f);const v=Math.max(f==='r'?1:0,(numIn(el.value)||0)+ +s);el.value=Math.round(v*100)/100;renderPlates();$('setErr').hidden=true;});
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const [f,s]=b.dataset.step.split(':');const el=$(f);const v=Math.max(f==='r'?1:0,(numIn(el.value)||0)+ +s);el.value=f==='w'?dec(Math.round(v*100)/100):Math.round(v);renderPlates();$('setErr').hidden=true;});
 ['w','r'].forEach(id=>$(id).addEventListener('input',()=>{renderPlates();$('setErr').hidden=true;}));
 function renderPlates(){
   const name=exName(),w=numIn($('w').value);
@@ -922,8 +925,9 @@ function renderPlates(){
   const cls={25:'p25',20:'p20',15:'p15',10:'p10',5:'p5',2.5:'p2',1.25:'p1'};
   const left=[...used].reverse().map(p=>`<span class="plate ${cls[p]}"></span>`).join('');
   const right=used.map(p=>`<span class="plate ${cls[p]}"></span>`).join('');
-  $('plates').innerHTML=`<div class="hint"><b>Блины на каждую сторону: ${used.length?used.map(fmt1).join(' + '):'без блинов'}</b>
-   <span class="muted">Олимпийский гриф 20 кг${side>0.01?'. Ровно этот вес не собрать, не хватает '+fmt1(side*2)+' кг':''}</span>
+  const fp=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:2});
+  $('plates').innerHTML=`<div class="hint"><b>Блины на каждую сторону: ${used.length?used.map(fp).join(' + '):'без блинов'}</b>
+   <span class="muted">Олимпийский гриф 20 кг${side>0.01?'. Ровно этот вес не собрать, не хватает '+fp(side*2)+' кг':''}</span>
    <div class="bar" aria-hidden="true"><span class="rod" style="width:24px"></span>${left}<span class="collar"></span><span class="rod" style="flex:1;min-width:30px"></span><span class="collar"></span>${right}<span class="rod" style="width:24px"></span></div></div>`;
 }
 $('addSet').onclick=()=>{
@@ -953,9 +957,9 @@ function renderGym(){
   $('weekCard').innerHTML=`<div class="row"><h2>Неделя</h2><span class="num" style="font-size:20px;font-weight:600">${cnt} <span class="muted" style="font-size:15px">из ${settings.train} тренировок</span></span></div><div class="week">${cells}</div>`;
   const vol=weeklyVolume(ws),MAX=24;
   $('volCard').innerHTML=`<h2>Подходы на мышцы за неделю</h2>
-    ${Object.entries(vol).map(([g,v])=>{const f=isFocus(g),lo=f?14:10;const st=v<lo?['','мало']:v<=20?['ok','в зоне роста']:['hi','много'];
+    ${Object.entries(vol).map(([g,v])=>{const f=isFocus(g),lo=volLo(g,f);const st=v<lo?['','мало']:v<=20?['ok','в зоне роста']:['hi','много'];
       return `<div class="vol"><span>${f?'<b>'+g+'</b>':g}</span><div class="track"><span class="zone" style="left:${lo/MAX*100}%;width:${(20-lo)/MAX*100}%"></span><span class="fill" style="width:${Math.min(100,v/MAX*100)}%"></span></div><span class="v">${fmt1(v)}</span><span><span class="tag ${st[0]}">${st[1]}</span></span></div>`;}).join('')}
-    <p class="small muted" style="margin:0">Зелёная зона — 10–20 подходов в неделю, для приоритетных мышц (жирным) — 14–20. Прямые подходы считаются целиком, косвенные за половину: жим лёжа даёт 0,5 подхода рукам и плечам.</p>`;
+    <p class="small muted" style="margin:0">Зелёная зона — от 10 до 20 подходов в неделю (пресс от 8), для приоритетных мышц (жирным) — от 14 (пресс от 12). Прямые подходы считаются целиком, косвенные за половину: жим лёжа даёт 0,5 подхода рукам и плечам.</p>`;
   const sets=getDay(cur).sets;
   const byEx={};sets.forEach(s=>(byEx[s.ex]=byEx[s.ex]||[]).push(s));
   $('tonnage').textContent=sets.length?'Тоннаж '+fmt(sets.reduce((a,s)=>a+s.w*s.r,0))+' кг':'';
@@ -972,7 +976,7 @@ $('setList').addEventListener('click',e=>{
 function editSet(id){
   const s=getDay(cur).sets.find(x=>x.id===id);if(!s)return;
   openSheet(`<h2>Исправить подход</h2><p class="small muted" style="margin:0">${esc(s.ex)}</p>
-    <div class="grid3"><div class="field"><label for="sW">Вес, кг</label><input id="sW" type="number" inputmode="decimal" min="0" step="0.5" value="${s.w}"></div>
+    <div class="grid3"><div class="field"><label for="sW">Вес, кг</label><input id="sW" type="text" inputmode="decimal" autocomplete="off" min="0" step="0.5" value="${dec(s.w)}"></div>
     <div class="field"><label for="sR">Повторы</label><input id="sR" type="number" inputmode="numeric" min="1" value="${s.r}"></div>
     <div class="field"><label for="sRir">RIR</label><select id="sRir"><option value="">—</option>${[0,1,2,3,4].map(v=>`<option value="${v}"${s.rir===v?' selected':''}>${v===4?'4+':v}</option>`).join('')}</select></div></div>
     <p class="err" id="sErr" hidden></p>
@@ -1019,7 +1023,7 @@ function weightSeries(){
   return ks.map(k=>{const w=days[k].weight;tr=tr===null?w:tr+A*(w-tr);return {k,w,t:tr};});
 }
 function renderWeight(){
-  const d=getDay(cur);if(document.activeElement!==$('bw'))$('bw').value=d.weight||'';
+  const d=getDay(cur);if(document.activeElement!==$('bw'))$('bw').value=dec(d.weight||'');
   const lw=latestWeight(cur);$('bw').placeholder=lw?String(lw).replace('.',','):'72,5';
   const ser=weightSeries();const el=$('bwChart');
   $('wlist').innerHTML=ser.length?[...ser].reverse().slice(0,7).map(p=>`<div class="wrow"><span>${dlShort(p.k)}</span><span class="num" style="font-size:17px">${fmt1(p.w)} кг</span><button class="x" data-del-weight="${p.k}" aria-label="Удалить вес за ${dlShort(p.k)}">×</button></div>`).join('')
@@ -1127,7 +1131,7 @@ function profFromSettings(){prof=clone(settings.profile||{});if(!prof.focus)prof
 function fillProfile(){
   profFromSettings();
   const setv=(id,v)=>{if(document.activeElement!==$(id))$(id).value=v??'';};
-  setv('pAge',prof.age);setv('pH',prof.height);setv('pW',prof.weight||latestWeight(TODAY)||'');setv('pWaist',prof.waist);setv('pNeck',prof.neck);setv('pHip',prof.hip);
+  setv('pAge',prof.age);setv('pH',prof.height);setv('pW',dec(prof.weight||latestWeight(TODAY)||''));setv('pWaist',prof.waist);setv('pNeck',prof.neck);setv('pHip',prof.hip);
   $('pAct').value=String(prof.act);
   renderProfChips();renderPlan();
 }
@@ -1238,7 +1242,8 @@ function renderPlan(){
   let bfHtml='';
   if(r.bf!==null){
     const pos=v=>Math.min(100,Math.max(0,(v-5)/(35-5)*100));
-    bfHtml=`<div><h3>Процент жира</h3><div class="bfbar"><span class="m" style="left:${pos(r.bf)}%"><span>сейчас ≈${fmt1(r.bf)}%</span></span><span class="m t" style="left:${pos(r.tbf)}%"><span>пресс виден ≈${r.tbf}%</span></span></div>
+    const lab=v=>{const x=pos(v);return x<18?'left:0;transform:none':x>82?'left:auto;right:0;transform:none':'';};
+    bfHtml=`<div><h3>Процент жира</h3><div class="bfbar"><span class="m" style="left:${pos(r.bf)}%"><span style="${lab(r.bf)}">сейчас ≈${fmt1(r.bf)}%</span></span><span class="m t" style="left:${pos(r.tbf)}%"><span style="${lab(r.tbf)}">пресс виден ≈${r.tbf}%</span></span></div>
       <p class="small muted" style="margin:0">Оценка по формуле ВМС США из замеров, погрешность около 3–4%. Порог видимого пресса примерный и у всех разный.</p></div>`;
     if(r.eta)bfHtml+=`<div class="hint"><b>Примерно ${r.eta.weeks} ${plural(r.eta.weeks,['неделя','недели','недель'])} до заметного рельефа</b><span class="muted">Нужно убрать около ${fmt1(r.eta.lose)} кг жира, вес будет около ${fmt1(r.eta.tw)} кг, если мышцы сохранятся. ${prof.goal==='recomp'?'При рекомпозиции срок дольше, зато вес почти не падает.':''}</span></div>`;
     else if(r.bf<=r.tbf+0.5)bfHtml+=`<div class="hint"><span>Жира уже немного. Рельеф теперь в основном зависит от размера мышц, так что подойдут «Набор массы» или «Сила и форма».</span></div>`;
@@ -1258,7 +1263,7 @@ function renderPlan(){
     <p class="small muted" style="margin:0">Расход около ${fmt(r.tdee)} ккал в день${r.useObs?' по твоим записям':' (формула Миффлина — Сан Жеора плюс тренировки)'}. Ожидание: ${wkTxt}. Белок: ${r.pNote}. Жиры не меньше 25% калорий.${r.capped?' Дефицит ограничен 25% расхода, чтобы не терять мышцы и силы.':''}${r.floored?' Калории подняты до безопасного минимума.':''}${r.lowCarb?' Углеводов меньше 3 г/кг — для набора лучше чуть поднять калории.':''}</p>
     ${obsHtml}
     ${bfHtml}
-    <div class="field"><span class="lbl">Подходов в неделю на мышцу</span><div class="chips">${Object.keys(EX).map(gr=>`<span class="tag ${isFocusP(gr)?'ok':''}">${gr} ${isFocusP(gr)?'14–20':'10–12'}</span>`).join('')}</div></div>
+    <div class="field"><span class="lbl">Подходов в неделю на мышцу</span><div class="chips">${Object.keys(EX).map(gr=>`<span class="tag ${isFocusP(gr)?'ok':''}">${gr} ${volLo(gr,isFocusP(gr))}–20</span>`).join('')}</div></div>
     <div class="field"><span class="lbl">Как разбить ${prof.days} ${plural(prof.days,['тренировку','тренировки','тренировок'])}</span><span>${splitFor(prof.days)}</span><span class="small muted">При равном недельном объёме частота почти не влияет на рост — так просто удобнее набрать нужные подходы.</span></div>
     <ul class="tips"><li>${gtip}</li>${sleepTip}${prof.focus.map(f=>`<li><b>${f}.</b> ${FTIPS[f]}</li>`).join('')}</ul>
     <button class="btn" type="button" id="applyPlan">Применить план к целям</button>
@@ -1488,8 +1493,8 @@ const TPL={
  PL2:{t:'Тяни Б',x:['vpull2','hpull','hpull3','rear','curl','curl2']}
 };
 const DAYS_TPL={2:['FA','FB'],3:['FA','FB','FC'],4:['UA','LA','UB','LB'],5:['UA','LA','PU','PL','LG'],6:['PU','PL','LG','PU2','PL2','LB']};
-const VOL_BASE={'Грудь':10,'Спина':10,'Ноги':10,'Плечи':8,'Руки':8,'Пресс':6};
-const VOL_FOCUS={'Грудь':16,'Спина':16,'Ноги':16,'Плечи':14,'Руки':14,'Пресс':10};
+const VOL_BASE={'Грудь':10,'Спина':10,'Ноги':10,'Плечи':10,'Руки':10,'Пресс':8};
+const VOL_FOCUS={'Грудь':16,'Спина':16,'Ноги':16,'Плечи':14,'Руки':14,'Пресс':12};
 const groupOf=n=>Object.keys(EX).find(g=>EX[g].includes(n))||null;
 function progVolume(days){
   const v={};Object.keys(EX).forEach(g=>v[g]=0);
@@ -1689,6 +1694,10 @@ $('impFile').addEventListener('change',e=>{
 });
 
 $('howBtn').onclick=()=>{const n=exName();if(n)showHow(n);else toast('Сначала выбери или впиши упражнение');};
+/* ---------- day rollover: the app can stay open past midnight ---------- */
+function checkDay(){const t=keyOf(new Date());if(t===TODAY)return;const was=cur===TODAY;TODAY=t;if(was)cur=t;$('slot').value=slotNow();render();exChange(false);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDay();});
+window.addEventListener('focus',checkDay);setInterval(checkDay,60000);
 /* ---------- boot ---------- */
 function render(){renderHeader();renderToday();renderFood();renderProgToday();renderGym();renderProgress();renderProtCalc();renderPlan();renderProgCard();}
 $('slot').value=slotNow();
