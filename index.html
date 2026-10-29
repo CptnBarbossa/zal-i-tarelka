@@ -1,0 +1,1722 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Дневник тренировок и питания: программа под цель, техника упражнений, калории и БЖУ.">
+<meta name="theme-color" content="#EEF1F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1217" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Зал и тарелка">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}html,body{margin:0}body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Зал и тарелка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow logbook column, sticky date bar, four tabs, rest timer docked at the bottom, edit sheets slide up; macro colors follow competition plate colors (25 red, 20 blue, 15 yellow, 10 green) */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --sunken:#E3E8ED; --fg:#131A22; --muted:#5A6573; --line:#D3DAE2;
+  --ink:#131A22; --on-ink:#FFFFFF;
+  --red:#C8243A; --blue:#1E5BB8; --yellow:#D99A00; --green:#23845A; --zone:rgba(35,132,90,.16); --scrim:rgba(10,14,20,.5);
+  --p5:#F6F7F8; --p2:#20262E;
+  --font-d:"Fira Sans Extra Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-b:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1217; --surface:#161B22; --sunken:#1F262F; --fg:#E6EBF0; --muted:#94A0AE; --line:#29313B;
+  --ink:#E6EBF0; --on-ink:#0E1217; --red:#F04E66; --blue:#5A93EE; --yellow:#F0BE2E; --green:#45BE86; --zone:rgba(69,190,134,.18); --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1217; --surface:#161B22; --sunken:#1F262F; --fg:#E6EBF0; --muted:#94A0AE; --line:#29313B;
+  --ink:#E6EBF0; --on-ink:#0E1217; --red:#F04E66; --blue:#5A93EE; --yellow:#F0BE2E; --green:#45BE86; --zone:rgba(69,190,134,.18); --scrim:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-b);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 110px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.app{max-width:560px;margin:0 auto}
+h2{font-family:var(--font-d);font-weight:600;font-size:20px;letter-spacing:.01em;margin:0;text-wrap:balance}
+h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.num{font-family:var(--font-d);font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+a{color:var(--blue)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;display:grid;gap:10px}
+.daterow{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;text-align:center}
+.daterow button{height:44px;width:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:22px;cursor:pointer;line-height:1}
+.date{font-family:var(--font-d);font-size:26px;font-weight:700;line-height:1.1}
+.sub{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--sunken);border-radius:12px;padding:3px;gap:3px}
+.tabs button{border:0;background:transparent;border-radius:9px;padding:8px 4px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg)}
+main section{display:grid;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.big{font-family:var(--font-d);font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:4px;background:var(--sunken);overflow:hidden;position:relative}
+.track i{display:block;height:100%;border-radius:4px}
+.macro{display:grid;grid-template-columns:96px minmax(0,1fr) 92px;align-items:center;gap:10px;font-size:14px}
+.macro .v{text-align:right;font-family:var(--font-d);font-size:16px;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+.c-red{background:var(--red)}.c-blue{background:var(--blue)}.c-yellow{background:var(--yellow)}.c-green{background:var(--green)}.c-ink{background:var(--ink)}
+.field{display:grid;gap:4px;min-width:0}
+.field label,.lbl{font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+input,select{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;width:100%;min-width:0}
+input[type="checkbox"]{width:22px;height:22px;padding:0;margin:0;accent-color:var(--ink);flex:none}
+.check{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.btn{height:46px;border-radius:12px;border:0;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:15px;cursor:pointer;padding:0 16px}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.sm{height:36px;font-size:13px;padding:0 12px;border-radius:10px}
+.btn.danger{background:var(--red);color:#fff}
+.btn.ghost.warn{color:var(--red)}
+.linkbtn{background:none;border:0;color:var(--blue);padding:0;font-weight:600;cursor:pointer;justify-self:start;font-size:14px}
+.err{color:var(--red);font-size:13px;margin:0}
+.list{display:grid}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto 36px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.itembtn{background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;min-width:0;display:grid}
+.itembtn .name{font-weight:600;overflow-wrap:anywhere}
+.itembtn .meta{font-size:12px;color:var(--muted)}
+.slot{display:grid;padding-top:4px}
+.slot+.slot{margin-top:8px}
+.slothead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0 2px}
+.x{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:16px;color:var(--muted);font-size:14px;text-align:center}
+.glasses{display:flex;gap:8px;flex-wrap:wrap}
+.glass{width:30px;height:40px;border:2px solid var(--blue);border-top-width:0;border-radius:0 0 8px 8px;background:transparent;cursor:pointer;padding:0}
+.glass.on{background:var(--blue)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.chip.food{font-weight:500;text-align:left;padding:6px 12px;display:grid;line-height:1.25}
+.chip.food small{color:var(--muted);font-size:12px}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sunken);color:var(--muted)}
+.tag.ok{background:var(--zone);color:var(--green)}
+.tag.hi{background:rgba(217,154,0,.18);color:var(--yellow)}
+.stepper{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+.stepper button{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);font-size:20px;cursor:pointer}
+.stepper input{text-align:center;font-family:var(--font-d);font-size:20px;font-weight:600}
+.hint{background:var(--sunken);border-radius:10px;padding:10px 12px;font-size:13px;display:grid;gap:3px}
+.hint b{font-weight:700}
+.plan{border-left:3px solid var(--green);padding:2px 0 2px 10px}
+.bar{display:flex;align-items:center;gap:2px;min-height:48px;overflow-x:auto}
+.bar .rod{height:8px;width:40px;background:var(--muted);border-radius:2px;flex:none}
+.bar .collar{height:16px;width:5px;background:var(--muted);border-radius:1px;flex:none}
+.plate{width:11px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.15)}
+.p25{background:var(--red);height:46px}.p20{background:var(--blue);height:46px}.p15{background:var(--yellow);height:40px}
+.p10{background:var(--green);height:34px}.p5{background:var(--p5);height:26px;border-color:var(--muted)}.p2{background:var(--p2);height:20px;border-color:var(--muted)}.p1{background:var(--muted);height:16px}
+.exblock{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:2px}
+.exblock:first-child{border-top:0;padding-top:0}
+.setrow{display:grid;grid-template-columns:24px minmax(0,1fr) auto 36px;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+.setrow .itembtn{display:block;font-family:var(--font-d);font-size:17px}
+.setrow .n{color:var(--muted);font-family:var(--font-d)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;text-align:center;font-size:12px;color:var(--muted)}
+.week .d{height:34px;border-radius:9px;background:var(--sunken);display:grid;place-items:center;font-family:var(--font-d);font-size:15px;color:var(--fg)}
+.week .d.on{background:var(--green);color:#fff}
+.week .d.today{outline:2px solid var(--ink);outline-offset:-2px}
+.week .d.future{opacity:.45}
+.vol{display:grid;grid-template-columns:64px minmax(0,1fr) 44px 92px;gap:10px;align-items:center;font-size:14px}
+.vol .track{height:12px}
+.vol .zone{position:absolute;top:0;bottom:0;background:var(--zone)}
+.vol .fill{position:absolute;left:0;top:3px;bottom:3px;border-radius:3px;background:var(--ink)}
+.vol .v{text-align:right;font-family:var(--font-d);font-size:16px}
+.wlist{display:grid}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) auto 36px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+svg text{font-family:var(--font-d);fill:var(--muted);font-size:13px}
+svg .val{fill:var(--fg);font-weight:600}
+.b-kcal{fill:var(--blue)} .b-prot{fill:var(--red)} .b-empty{fill:var(--sunken)}
+.goal{stroke:var(--fg);stroke-width:1.2;stroke-dasharray:5 4;opacity:.55}
+.gridl{stroke:var(--line);stroke-width:1}
+.ln{stroke:var(--red);stroke-width:2.5;fill:none}
+.ln-trend{stroke:var(--ink);stroke-width:2.5;fill:none}
+.area{fill:var(--red);opacity:.12}
+.pt{fill:var(--surface);stroke:var(--red);stroke-width:2}
+.pt.end{fill:var(--red)}
+.raw{fill:var(--muted);opacity:.55}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:300px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
+.restbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--on-ink);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.restin{max-width:560px;margin:0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
+.restin .t{font-family:var(--font-d);font-size:32px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;min-width:76px}
+.restin .lbl2{font-size:12px;opacity:.75}
+.resttrack{height:6px;border-radius:3px;background:rgba(127,127,127,.35);overflow:hidden;margin-top:6px}
+.resttrack i{display:block;height:100%;background:var(--green)}
+.restbtns{display:flex;gap:6px}
+.restbtns button{height:40px;min-width:44px;border-radius:10px;border:1px solid rgba(127,127,127,.5);background:transparent;color:inherit;font-weight:700;cursor:pointer;padding:0 8px}
+.restbar.done .t{color:var(--green)}
+.sheet{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheetp{background:var(--surface);width:100%;max-width:560px;border-radius:18px 18px 0 0;display:grid;gap:12px;max-height:88vh;overflow:auto;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.status{font-size:13px;color:var(--muted)}
+.sci{margin:0;padding-left:18px;display:grid;gap:8px;font-size:14px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opt{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;text-align:left;cursor:pointer;display:grid;gap:2px;align-content:start}
+.opt b{font-size:15px;font-weight:700}.opt span{font-size:12px;color:var(--muted);line-height:1.35}
+.opt[aria-pressed="true"]{border:2px solid var(--ink);padding:11px;background:var(--surface)}
+.kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kpi div{background:var(--sunken);border-radius:10px;padding:8px 10px;min-width:0}
+.kpi .k{font-family:var(--font-d);font-size:22px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.bfbar{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));margin:18px 0 22px}
+.bfbar .m{position:absolute;top:-6px;width:3px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+.bfbar .m span{position:absolute;top:26px;left:50%;transform:translateX(-50%);font-size:12px;white-space:nowrap;font-family:var(--font-d);color:var(--fg)}
+.bfbar .m.t{background:var(--surface);border:2px solid var(--ink);width:7px}
+.bfbar .m.t span{top:-20px}
+.tips{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.resetrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.resetrow:first-of-type{border-top:0}
+.todo{display:grid}
+.todorow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.todorow:first-child{border-top:0}
+.st{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);margin-top:2px;display:block}
+.st.done{background:var(--green);border-color:var(--green)}
+.st.part{border-color:var(--green);background:linear-gradient(90deg,var(--green) 50%,transparent 50%)}
+.progday{display:grid;gap:6px;padding:12px 0 4px;border-top:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) 36px 36px;gap:8px;align-items:center;font-size:14px}
+.prow .itembtn span:first-child{font-weight:600}
+.iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:15px;color:var(--fg)}
+.steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
+#logCard{scroll-margin-top:140px}
+@media (prefers-reduced-motion: no-preference){.track i,.vol .fill{transition:width .35s ease}}
+@media (max-width:400px){.macro{grid-template-columns:80px minmax(0,1fr) 84px}.big{font-size:38px}.vol{grid-template-columns:56px minmax(0,1fr) 38px 84px;gap:8px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header class="top">
+    <div class="daterow">
+      <button id="prev" aria-label="Предыдущий день">‹</button>
+      <div><div id="dateLabel" class="date">Сегодня</div><div id="dateSub" class="sub"></div></div>
+      <button id="next" aria-label="Следующий день">›</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="food" aria-selected="true">Еда</button>
+      <button role="tab" data-tab="gym" aria-selected="false">Зал</button>
+      <button role="tab" data-tab="progress" aria-selected="false">Прогресс</button>
+      <button role="tab" data-tab="goals" aria-selected="false">Цели</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="tab-food">
+      <div class="card" id="installCard" hidden>
+        <div class="row"><h2>Установи как приложение</h2><button type="button" class="x" id="installClose" aria-label="Скрыть">×</button></div>
+        <div id="installBody" class="small"></div>
+      </div>
+            <div class="card" id="todayPlan" hidden></div>
+      <div class="card" id="foodSummary"></div>
+
+      <form class="card" id="foodForm" novalidate>
+        <h2>Добавить еду</h2>
+        <div id="recentWrap" class="field" hidden>
+          <span class="lbl">Повторить</span>
+          <div class="chips" id="recent"></div>
+        </div>
+        <div class="field"><label for="foodSearch">Найти продукт</label><input id="foodSearch" type="search" placeholder="курица, гречка, творог…" autocomplete="off"></div>
+        <div class="field">
+          <label for="prod">Продукт</label>
+          <select id="prod"></select>
+          <button type="button" class="linkbtn" id="delMine" hidden>Убрать из моих продуктов</button>
+        </div>
+        <div id="customFields" class="grid2" hidden>
+          <div class="field" style="grid-column:1/-1"><label for="cName">Название</label><input id="cName" placeholder="Сырники домашние" autocomplete="off"></div>
+          <div class="field"><label for="cK">Ккал на 100 г</label><input id="cK" type="number" inputmode="decimal" min="0" placeholder="220"></div>
+          <div class="field"><label for="cP">Белок на 100 г</label><input id="cP" type="number" inputmode="decimal" min="0" placeholder="15"></div>
+          <div class="field"><label for="cC">Углеводы на 100 г</label><input id="cC" type="number" inputmode="decimal" min="0" placeholder="20"></div>
+          <div class="field"><label for="cF">Жиры на 100 г</label><input id="cF" type="number" inputmode="decimal" min="0" placeholder="9"></div>
+          <label class="check" style="grid-column:1/-1"><input type="checkbox" id="cSave" checked> Запомнить в «Мои продукты»</label>
+          <span class="small muted" style="grid-column:1/-1">Знаешь только калории порции? Поставь 100 г и впиши данные всей порции.</span>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="slot">Приём</label>
+            <select id="slot"><option>Завтрак</option><option>Обед</option><option>Перекус</option><option>Ужин</option></select></div>
+          <div class="field"><label for="grams">Граммы или мл</label><input id="grams" type="number" inputmode="decimal" min="1" value="150"></div>
+        </div>
+        <div id="foodPreview" class="hint"></div>
+        <p id="foodErr" class="err" hidden></p>
+        <button class="btn" type="submit">Добавить</button>
+      </form>
+
+      <div class="card">
+        <div class="row"><h2>Съедено</h2><span class="row" style="gap:10px"><span id="mealCount" class="small muted"></span><button type="button" class="btn ghost sm" id="clearFood" hidden>Очистить день</button></span></div>
+        <p class="small muted" style="margin:-4px 0 0">Нажми на запись, чтобы исправить граммы или БЖУ.</p>
+        <div id="mealList" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div class="row"><h2>Вода</h2><span id="waterTxt" class="small muted num"></span></div>
+        <div id="water" class="glasses"></div>
+      </div>
+
+      <div class="card">
+        <div class="row"><h2>Сон прошлой ночью</h2><span id="sleepTxt" class="small muted"></span></div>
+        <div class="stepper" style="max-width:240px"><button type="button" data-sleep="-0.5" aria-label="Минус полчаса">−</button><input id="sleepVal" readonly aria-label="Часы сна" value="—"><button type="button" data-sleep="0.5" aria-label="Плюс полчаса">+</button></div>
+      </div>
+    </section>
+
+    <section id="tab-gym" hidden>
+      <div class="card" id="progToday"></div>
+      <div class="card" id="weekCard"></div>
+      <div class="card" id="volCard"></div>
+
+      <div class="card" id="logCard">
+        <h2>Записать подход</h2>
+        <div class="chips" id="groups"></div>
+        <div id="placeNote" class="small muted"></div>
+        <div class="field">
+          <label for="ex">Упражнение</label>
+          <select id="ex"></select>
+          <button type="button" class="linkbtn" id="howBtn">Как делать это упражнение</button>
+        </div>
+        <div class="field" id="customExField" hidden>
+          <label for="customEx">Своё упражнение</label>
+          <input id="customEx" placeholder="Пуловер с гантелью" autocomplete="off">
+        </div>
+        <div id="lastTime" class="hint"></div>
+        <div class="grid2">
+          <div class="field"><label for="w">Вес, кг</label>
+            <div class="stepper"><button type="button" data-step="w:-2.5" aria-label="Минус 2,5 кг">−</button><input id="w" type="number" inputmode="decimal" min="0" step="0.5" value="40"><button type="button" data-step="w:2.5" aria-label="Плюс 2,5 кг">+</button></div>
+          </div>
+          <div class="field"><label for="r">Повторы</label>
+            <div class="stepper"><button type="button" data-step="r:-1" aria-label="Минус повтор">−</button><input id="r" type="number" inputmode="numeric" min="1" step="1" value="10"><button type="button" data-step="r:1" aria-label="Плюс повтор">+</button></div>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Сколько ещё мог сделать (RIR)</span>
+          <div class="chips" id="rir"></div>
+        </div>
+        <div id="plates"></div>
+        <p id="setErr" class="err" hidden></p>
+        <button class="btn" id="addSet" type="button">Записать подход</button>
+      </div>
+
+      <div class="card">
+        <div class="row"><h2>Тренировка</h2><span class="row" style="gap:10px"><span id="tonnage" class="small muted num"></span><button type="button" class="btn ghost sm" id="clearSets" hidden>Очистить</button></span></div>
+        <p class="small muted" style="margin:-4px 0 0">Нажми на подход, чтобы исправить вес, повторы или RIR.</p>
+        <div id="setList"></div>
+      </div>
+    </section>
+
+    <section id="tab-progress" hidden>
+      <div class="card">
+        <div class="row"><h2>Вес тела</h2><span id="bwTrend" class="small muted num"></span></div>
+        <div class="grid2" style="grid-template-columns:minmax(0,1fr) auto;align-items:end">
+          <div class="field"><label for="bw">Вес за этот день, кг</label><input id="bw" type="number" inputmode="decimal" min="25" max="300" step="0.1" placeholder="72,5"></div>
+          <button class="btn" id="bwSave" type="button">Записать</button>
+        </div>
+        <p id="bwErr" class="err" hidden></p>
+        <div class="chart" id="bwChart"></div>
+        <p class="small muted" style="margin:0">Серые точки — что показали весы, линия — сглаженный тренд. Вес за день скачет на 1–2 кг из-за воды и еды, поэтому смотри на линию.</p>
+        <div><h3>Последние записи</h3><div class="wlist" id="wlist"></div></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>Калории за 14 дней</h2><span class="small muted"><span class="dot c-blue"></span>ккал</span></div>
+        <div class="chart" id="kcalChart"></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>Белок за 14 дней</h2><span class="small muted"><span class="dot c-red"></span>граммы</span></div>
+        <div class="chart" id="protChart"></div>
+      </div>
+      <div class="card">
+        <h2>Сила в упражнении</h2>
+        <div class="field"><label for="progEx">Упражнение</label><select id="progEx"></select></div>
+        <div class="chart" id="exChart"></div>
+        <p class="small muted" style="margin:0">Расчётный максимум на 1 повтор по формуле Эпли с учётом RIR: вес × (1 + (повторы + RIR) / 30). Для упражнений без веса график показывает лучший подход в повторах.</p>
+      </div>
+      <div class="card">
+        <h2>Календарь тренировок</h2>
+        <div id="cal"></div>
+      </div>
+    </section>
+
+    <section id="tab-goals" hidden>
+      <form class="card" id="profForm" novalidate>
+        <h2>Мои параметры</h2>
+        <div class="field"><span class="lbl">Пол</span><div class="chips" id="pSex"><button type="button" class="chip" data-sex="m" aria-pressed="false">Мужской</button><button type="button" class="chip" data-sex="f" aria-pressed="false">Женский</button></div></div>
+        <div class="grid3">
+          <div class="field"><label for="pAge">Возраст</label><input id="pAge" type="number" inputmode="numeric" min="14" max="90" placeholder="22"></div>
+          <div class="field"><label for="pH">Рост, см</label><input id="pH" type="number" inputmode="numeric" min="120" max="230" placeholder="180"></div>
+          <div class="field"><label for="pW">Вес, кг</label><input id="pW" type="number" inputmode="decimal" min="35" max="250" step="0.1" placeholder="75"></div>
+        </div>
+        <div class="field"><label for="pAct">Активность вне зала</label>
+          <select id="pAct"><option value="1.2">Сидячая: учёба, офис, мало шагов</option><option value="1.375">Немного ходьбы, 5–8 тыс. шагов</option><option value="1.55">Много хожу или работа на ногах</option><option value="1.725">Тяжёлая физическая работа</option></select></div>
+        <div class="field"><span class="lbl">Тренировок в неделю</span><div class="chips" id="pDays"></div></div>
+        <div class="field"><span class="lbl">Стаж тренировок</span><div class="chips" id="pExp"></div></div>
+        <div class="field"><span class="lbl">Где тренируешься</span><div class="chips" id="pPlace"></div></div>
+        <div class="field" id="pEquipF" hidden><span class="lbl">Что есть дома</span><div class="chips" id="pEquip"></div>
+          <span class="small muted">Отметь всё, что есть. Стул, стол, диван и полотенце считаются по умолчанию.</span></div>
+        <div class="field"><span class="lbl">Замеры для оценки жира, необязательно</span>
+          <div class="grid3">
+            <div class="field"><label for="pWaist">Талия, см</label><input id="pWaist" type="number" inputmode="decimal" min="40" max="200" placeholder="82"></div>
+            <div class="field"><label for="pNeck">Шея, см</label><input id="pNeck" type="number" inputmode="decimal" min="20" max="70" placeholder="38"></div>
+            <div class="field" id="pHipF"><label for="pHip">Бёдра, см</label><input id="pHip" type="number" inputmode="decimal" min="50" max="200" placeholder="96"></div>
+          </div>
+          <span class="small muted">Талию меряй на уровне пупка на выдохе, шею — под кадыком, бёдра — по самой широкой части.</span></div>
+      </form>
+
+      <div class="card">
+        <h2>Какой результат хочешь</h2>
+        <div class="opts" id="pGoal"></div>
+        <div class="field" id="pPaceF"><span class="lbl">Темп</span><div class="chips" id="pPace"></div></div>
+        <div class="field"><span class="lbl">Что важнее всего прокачать</span><div class="chips" id="pFocus"></div></div>
+      </div>
+
+      <div class="card" id="planCard"></div>
+
+      <div class="card" id="progCard"></div>
+
+      <form class="card" id="goalsForm" novalidate>
+        <h2>Мои цели</h2>
+        <p class="small muted" style="margin:0">Можно поставить вручную или кнопкой «Применить план». Изменения сохраняются сами.</p>
+        <div class="grid2">
+          <div class="field"><label for="gK">Ккал в день</label><input id="gK" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="gP">Белок, г</label><input id="gP" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="gC">Углеводы, г</label><input id="gC" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="gF">Жиры, г</label><input id="gF" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="gT">Тренировок в неделю</label><input id="gT" type="number" inputmode="numeric" min="1" max="7"></div>
+          <div class="field"><label for="gW">Стаканов воды</label><input id="gW" type="number" inputmode="numeric" min="1" max="16"></div>
+          <div class="field"><label for="gRC">Отдых, базовые, сек</label><input id="gRC" type="number" inputmode="numeric" min="15" max="600"></div>
+          <div class="field"><label for="gRI">Отдых, изолирующие, сек</label><input id="gRI" type="number" inputmode="numeric" min="15" max="600"></div>
+        </div>
+        <div id="protCalc" class="hint"></div>
+        <p id="goalsSaved" class="small muted" style="margin:0" hidden>Сохранено</p>
+      </form>
+
+      <div class="card">
+        <h2>Сброс и исправление</h2>
+        <p class="small muted" style="margin:0">Отдельную запись еды, подхода или веса исправляют нажатием на неё. Здесь — сброс целиком.</p>
+        <div>
+          <div class="resetrow"><div><b>Профиль и цель</b><div class="small muted">Пол, рост, замеры, выбранный результат</div></div><button type="button" class="btn ghost sm" data-reset="profile">Сбросить</button></div>
+          <div class="resetrow"><div><b>Цели по калориям и БЖУ</b><div class="small muted">Вернуть примерные значения</div></div><button type="button" class="btn ghost sm" data-reset="goals">Сбросить</button></div>
+          <div class="resetrow"><div><b>Мои продукты</b><div class="small muted" id="myFoodsCount">Сохранённые свои продукты</div></div><button type="button" class="btn ghost sm" data-reset="foods">Удалить</button></div>
+          <div class="resetrow"><div><b>Программа тренировок</b><div class="small muted">Удалить составленную программу</div></div><button type="button" class="btn ghost sm" data-reset="program">Удалить</button></div>
+          <div class="resetrow"><div><b>Весь вес тела</b><div class="small muted">Все записи веса, еда и тренировки останутся</div></div><button type="button" class="btn ghost sm" data-reset="weights">Удалить</button></div>
+          <div class="resetrow"><div><b>Все записи</b><div class="small muted">Еда, тренировки, вес, сон, цели и профиль</div></div><button type="button" class="btn ghost sm warn" data-reset="all">Удалить всё</button></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>На чём основаны подсказки</h2>
+        <h3>Питание</h3>
+        <ul class="sci">
+          <li><b>Белок.</b> Прирост мышц почти перестаёт расти примерно после 1,6 г/кг в день; 2,2 г/кг — верхний ориентир. <a href="https://bjsm.bmj.com/content/52/6/376.abstract" target="_blank" rel="noopener">Morton, 2018</a></li>
+          <li><b>Белок на сушке.</b> Для натуральных атлетов на дефиците рекомендуют 2,3–3,1 г на кг сухой массы, худеть на 0,5–1% веса в неделю, жиры 15–30% калорий. <a href="https://jissn.biomedcentral.com/articles/10.1186/1550-2783-11-20/tables/1" target="_blank" rel="noopener">Helms и др., 2014</a></li>
+          <li><b>Набор массы.</b> Профицит около 10–20%, прибавка 0,25–0,5% веса в неделю для новичков и середнячков, опытным медленнее; белок 1,6–2,2 г/кг, жиры 0,5–1,5 г/кг, углеводов от 3 г/кг. <a href="https://pubmed.ncbi.nlm.nih.gov/31247944/" target="_blank" rel="noopener">Iraki и др., 2019</a></li>
+          <li><b>Белок по приёмам.</b> Около 0,4 г/кг за приём минимум 4 раза в день. <a href="https://doaj.org/article/4922eba27775405f945f3d34067cf0e3" target="_blank" rel="noopener">Schoenfeld и Aragon, 2018</a></li>
+          <li><b>Расход калорий.</b> Формула Миффлина — Сан Жеора точнее других, но у конкретного человека может ошибаться на 10% и больше, поэтому приложение пересчитывает расход по твоим записям. <a href="https://pure.psu.edu/en/publications/comparison-of-predictive-equations-for-resting-metabolic-rate-in-/" target="_blank" rel="noopener">Frankenfield и др., 2005</a></li>
+          <li><b>Рекомпозиция.</b> Одновременно сжечь жир и набрать мышцы получается не только у новичков, но и у тренированных; ключевое — прогрессия нагрузок и питание. <a href="https://lida.sport-iat.de/ta/Record/4066252?lng=en" target="_blank" rel="noopener">Barakat и др., 2020</a></li>
+          <li><b>Сон.</b> На диете при 5,5 ч сна вместо 8,5 ч доля жира в потерянном весе была на 55% меньше, а мышц терялось на 60% больше. <a href="https://pubmed.ncbi.nlm.nih.gov/20921542/" target="_blank" rel="noopener">Nedeltcheva и др., 2010</a></li>
+          <li><b>Пресс и жир.</b> 6 недель упражнений на пресс не уменьшили жир на животе: локально жир не сжигается. <a href="https://en.wikipedia.org/wiki/Spot_reduction" target="_blank" rel="noopener">Vispute и др., 2011</a></li>
+        </ul>
+        <h3>Тренировки</h3>
+        <ul class="sci">
+          <li><b>Подходы в неделю.</b> От 10 рабочих подходов в неделю на мышцу; дальше рост есть, но каждый новый подход даёт меньше. Косвенные подходы считаются за половину. <a href="https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071" target="_blank" rel="noopener">Pelland и др.</a></li>
+          <li><b>Частота.</b> При равном недельном объёме 1, 2 или 3 тренировки мышцы в неделю дают почти одинаковый рост, частота — вопрос удобства. <a href="https://getfitcraft.com/science/training-frequency-research" target="_blank" rel="noopener">Schoenfeld и др., 2019</a></li>
+          <li><b>Вес снаряда.</b> Тяжёлые и лёгкие веса растят мышцы похоже, если подход близок к отказу; для силы лучше тяжёлые. <a href="https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2018.00402/pdf" target="_blank" rel="noopener">Grgic и Schoenfeld, 2018</a></li>
+          <li><b>Близость к отказу.</b> Чем ближе к отказу, тем сильнее рост мышц; на силу влияет мало. <a href="https://biolayne.com/reps/issue-32/the-failure-factor-the-relationship-between-proximity-to-failure-and-strength-and-hypertrophy/" target="_blank" rel="noopener">Robinson и др.</a></li>
+          <li><b>Дома.</b> 8 недель отжиманий дали такой же рост груди и трицепса и прирост жима, как жим лёжа с сопоставимой нагрузкой. <a href="https://doaj.org/article/f70cce826f3348b5b4f3ace8cf8ac33e" target="_blank" rel="noopener">Kikuchi и Nakazato, 2017</a></li>
+          <li><b>Резинки.</b> По мета-анализу 8 исследований тренировки с резинками дают такой же прирост силы, как тренажёры и гантели. <a href="https://doaj.org/article/f76933a02f3a4ff08fd3d81de9169831" target="_blank" rel="noopener">Lopes и др., 2019</a></li>
+          <li><b>Отдых.</b> 1–2 минуты обычно хватает, тяжёлым базовым и ногам можно больше. <a href="https://www.strongerbyscience.com/rest-times-for-muscle-growth/" target="_blank" rel="noopener">Stronger by Science</a></li>
+          <li><b>Двойная прогрессия.</b> Добавляй повторы в диапазоне, затем вес. <a href="https://alphaprogression.com/en/glossary/double-progression" target="_blank" rel="noopener">Alpha Progression</a></li>
+          <li><b>Тренд веса.</b> Дневной вес шумит из-за воды, полезнее сглаженный тренд. <a href="https://help.macrofactorapp.com/dashboard/weight_trend/" target="_blank" rel="noopener">MacroFactor</a></li>
+        </ul>
+        <p class="small muted" style="margin:0">Это общие ориентиры для здоровых взрослых, а не персональная рекомендация врача или тренера.</p>
+      </div>
+
+      <div class="card">
+        <h2>Где хранятся записи</h2>
+        <p id="storeStatus" class="status" style="margin:0">Подключаю хранилище…</p>
+        <div class="grid2"><button type="button" class="btn ghost" id="expBtn">Сохранить копию</button>
+          <label class="btn ghost" for="impFile" style="display:grid;place-items:center;cursor:pointer">Загрузить копию</label></div>
+        <input type="file" id="impFile" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+        <p class="small muted" style="margin:0">Копия — это файл со всеми записями, целями и профилем. С ней можно перенести дневник в приложение на телефоне или восстановить данные.</p>
+        <p class="small muted" style="margin:0">БЖУ продуктов примерные, по средним справочным значениям на 100 г или 100 мл. У конкретной марки цифры могут отличаться — смотри этикетку и добавляй как свой продукт.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="restbar" class="restbar" hidden>
+  <div class="restin">
+    <div class="t num" id="restT">2:00</div>
+    <div style="min-width:0"><div class="lbl2" id="restLbl">Отдых</div><div class="resttrack"><i id="restFill" style="width:100%"></i></div></div>
+    <div class="restbtns">
+      <button type="button" id="restMinus" aria-label="Минус 15 секунд">−15</button>
+      <button type="button" id="restPlus" aria-label="Плюс 15 секунд">+15</button>
+      <button type="button" id="restClose" aria-label="Закрыть таймер">×</button>
+    </div>
+  </div>
+</div>
+<div id="sheet" class="sheet" hidden><div class="sheetp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* per 100 g (or 100 ml for drinks): k kcal, p protein, c carbs, f fat, d default portion */
+const PRODUCTS=[
+ {g:'Мясо и птица',n:'Куриная грудка, готовая',k:165,p:31,c:0,f:3.6,d:150},
+ {g:'Мясо и птица',n:'Куриная грудка, сырая',k:120,p:22.5,c:0,f:2.6,d:200},
+ {g:'Мясо и птица',n:'Куриное бедро без кожи, готовое',k:209,p:26,c:0,f:10.9,d:150},
+ {g:'Мясо и птица',n:'Куриные крылья, запечённые',k:290,p:27,c:0,f:19.5,d:150},
+ {g:'Мясо и птица',n:'Куриная печень, тушёная',k:167,p:24.5,c:0.9,f:6.5,d:120},
+ {g:'Мясо и птица',n:'Индейка, грудка готовая',k:147,p:30,c:0,f:2,d:150},
+ {g:'Мясо и птица',n:'Свиная вырезка, готовая',k:143,p:26,c:0,f:3.5,d:150},
+ {g:'Мясо и птица',n:'Свиная корейка, готовая',k:220,p:27,c:0,f:12,d:150},
+ {g:'Мясо и птица',n:'Свиная шея, жареная',k:290,p:23,c:0,f:22,d:150},
+ {g:'Мясо и птица',n:'Бекон, жареный',k:541,p:37,c:1.4,f:42,d:30},
+ {g:'Мясо и птица',n:'Говядина, постный стейк',k:206,p:29,c:0,f:9,d:150},
+ {g:'Мясо и птица',n:'Говяжий фарш 10%, готовый',k:217,p:26,c:0,f:11.7,d:150},
+ {g:'Мясо и птица',n:'Говяжий фарш 20%, готовый',k:254,p:25.8,c:0,f:16.6,d:150},
+ {g:'Мясо и птица',n:'Ветчина',k:145,p:20,c:1.5,f:6,d:50},
+ {g:'Мясо и птица',n:'Колбаса варёная',k:257,p:12.8,c:1.5,f:22.2,d:50},
+ {g:'Мясо и птица',n:'Колбаса копчёная',k:450,p:20,c:1,f:40,d:30},
+ {g:'Мясо и птица',n:'Сосиски',k:270,p:11,c:2,f:24,d:100},
+ {g:'Рыба и морепродукты',n:'Лосось, запечённый',k:206,p:22,c:0,f:12.4,d:150},
+ {g:'Рыба и морепродукты',n:'Скумбрия, запечённая',k:262,p:24,c:0,f:17.8,d:150},
+ {g:'Рыба и морепродукты',n:'Треска, готовая',k:105,p:23,c:0,f:0.9,d:150},
+ {g:'Рыба и морепродукты',n:'Тунец в собственном соку',k:116,p:26,c:0,f:1,d:120},
+ {g:'Рыба и морепродукты',n:'Креветки варёные',k:99,p:24,c:0.2,f:0.3,d:150},
+ {g:'Рыба и морепродукты',n:'Сельдь слабосолёная',k:217,p:19,c:0,f:15,d:80},
+ {g:'Яйца и молочное',n:'Яйца',k:143,p:12.6,c:0.7,f:9.5,d:110},
+ {g:'Яйца и молочное',n:'Яичный белок',k:52,p:11,c:0.7,f:0.2,d:100},
+ {g:'Яйца и молочное',n:'Омлет из яиц с молоком',k:154,p:10.6,c:0.6,f:11.7,d:150},
+ {g:'Яйца и молочное',n:'Творог 0%',k:71,p:16.5,c:1.3,f:0.1,d:200},
+ {g:'Яйца и молочное',n:'Творог 5%',k:121,p:17,c:1.8,f:5,d:200},
+ {g:'Яйца и молочное',n:'Творог 9%',k:159,p:16.7,c:2,f:9,d:200},
+ {g:'Яйца и молочное',n:'Зернёный творог',k:98,p:11,c:3.4,f:4.3,d:200},
+ {g:'Яйца и молочное',n:'Скир',k:63,p:11,c:4,f:0.2,d:150},
+ {g:'Яйца и молочное',n:'Йогурт греческий 2%',k:73,p:10,c:3.9,f:2,d:150},
+ {g:'Яйца и молочное',n:'Йогурт фруктовый',k:85,p:3,c:13,f:2.5,d:150},
+ {g:'Яйца и молочное',n:'Молоко 1,5%',k:44,p:3,c:4.7,f:1.5,d:250},
+ {g:'Яйца и молочное',n:'Молоко 2,5%',k:52,p:2.8,c:4.7,f:2.5,d:250},
+ {g:'Яйца и молочное',n:'Молоко 3,2%',k:59,p:2.9,c:4.7,f:3.2,d:250},
+ {g:'Яйца и молочное',n:'Кефир 1%',k:40,p:3,c:4,f:1,d:250},
+ {g:'Яйца и молочное',n:'Кефир 2,5%',k:53,p:3,c:4,f:2.5,d:250},
+ {g:'Яйца и молочное',n:'Сыр твёрдый (гауда)',k:356,p:25,c:2.2,f:27.4,d:30},
+ {g:'Яйца и молочное',n:'Сыр моцарелла',k:300,p:22,c:2.2,f:22.4,d:50},
+ {g:'Яйца и молочное',n:'Сыр фета',k:264,p:14,c:4,f:21,d:40},
+ {g:'Яйца и молочное',n:'Сметана 20%',k:206,p:2.8,c:3.2,f:20,d:30},
+ {g:'Крупы и гарниры',n:'Гречка варёная',k:92,p:3.4,c:20,f:0.6,d:200},
+ {g:'Крупы и гарниры',n:'Гречка сухая',k:343,p:13.3,c:71.5,f:3.4,d:70},
+ {g:'Крупы и гарниры',n:'Рис белый варёный',k:130,p:2.7,c:28,f:0.3,d:200},
+ {g:'Крупы и гарниры',n:'Рис белый сухой',k:360,p:6.6,c:79,f:0.6,d:70},
+ {g:'Крупы и гарниры',n:'Рис бурый варёный',k:123,p:2.7,c:26,f:1,d:200},
+ {g:'Крупы и гарниры',n:'Паста варёная',k:158,p:5.8,c:31,f:0.9,d:200},
+ {g:'Крупы и гарниры',n:'Паста сухая',k:371,p:13,c:75,f:1.5,d:80},
+ {g:'Крупы и гарниры',n:'Овсянка сухая',k:379,p:13.2,c:67.7,f:6.5,d:60},
+ {g:'Крупы и гарниры',n:'Овсянка на воде, готовая',k:71,p:2.5,c:12,f:1.5,d:250},
+ {g:'Крупы и гарниры',n:'Булгур варёный',k:83,p:3,c:19,f:0.2,d:200},
+ {g:'Крупы и гарниры',n:'Киноа варёная',k:120,p:4.4,c:21,f:1.9,d:200},
+ {g:'Крупы и гарниры',n:'Перловка варёная',k:123,p:2.3,c:28,f:0.4,d:200},
+ {g:'Крупы и гарниры',n:'Кускус варёный',k:112,p:3.8,c:23,f:0.2,d:200},
+ {g:'Крупы и гарниры',n:'Пшённая каша на воде',k:119,p:3.5,c:23.7,f:1,d:200},
+ {g:'Крупы и гарниры',n:'Картофель варёный',k:87,p:1.9,c:20,f:0.1,d:200},
+ {g:'Крупы и гарниры',n:'Картофельное пюре с молоком и маслом',k:113,p:1.9,c:16.8,f:4.2,d:200},
+ {g:'Крупы и гарниры',n:'Фасоль красная варёная',k:127,p:8.7,c:23,f:0.5,d:150},
+ {g:'Крупы и гарниры',n:'Чечевица варёная',k:116,p:9,c:20,f:0.4,d:150},
+ {g:'Крупы и гарниры',n:'Нут варёный',k:164,p:8.9,c:27,f:2.6,d:150},
+ {g:'Хлеб и выпечка',n:'Хлеб ржаной',k:259,p:8.5,c:48,f:3.3,d:60},
+ {g:'Хлеб и выпечка',n:'Хлеб белый',k:265,p:9,c:49,f:3.2,d:60},
+ {g:'Хлеб и выпечка',n:'Хлеб цельнозерновой',k:252,p:12.4,c:42.7,f:3.5,d:60},
+ {g:'Хлеб и выпечка',n:'Тортилья пшеничная',k:304,p:8.1,c:50,f:8,d:60},
+ {g:'Хлеб и выпечка',n:'Хлебцы ржаные',k:366,p:7.9,c:82,f:1.3,d:20},
+ {g:'Хлеб и выпечка',n:'Блины',k:227,p:6.4,c:28,f:9.7,d:120},
+ {g:'Хлеб и выпечка',n:'Круассан',k:406,p:8.2,c:46,f:21,d:60},
+ {g:'Овощи',n:'Огурец',k:15,p:0.7,c:3.6,f:0.1,d:150},
+ {g:'Овощи',n:'Помидор',k:18,p:0.9,c:3.9,f:0.2,d:150},
+ {g:'Овощи',n:'Овощной салат без заправки',k:25,p:1.2,c:4.5,f:0.2,d:150},
+ {g:'Овощи',n:'Брокколи варёная',k:35,p:2.4,c:7.2,f:0.4,d:150},
+ {g:'Овощи',n:'Капуста белокочанная',k:25,p:1.3,c:5.8,f:0.1,d:150},
+ {g:'Овощи',n:'Квашеная капуста',k:19,p:0.9,c:4.3,f:0.1,d:100},
+ {g:'Овощи',n:'Морковь',k:41,p:0.9,c:10,f:0.2,d:100},
+ {g:'Овощи',n:'Перец болгарский',k:26,p:1,c:6,f:0.3,d:150},
+ {g:'Овощи',n:'Кабачок',k:17,p:1.2,c:3.1,f:0.3,d:200},
+ {g:'Овощи',n:'Шампиньоны',k:22,p:3.1,c:3.3,f:0.3,d:150},
+ {g:'Овощи',n:'Свёкла варёная',k:44,p:1.7,c:10,f:0.2,d:150},
+ {g:'Овощи',n:'Кукуруза сладкая',k:86,p:3.3,c:19,f:1.4,d:100},
+ {g:'Овощи',n:'Горошек зелёный',k:81,p:5.4,c:14,f:0.4,d:100},
+ {g:'Фрукты и ягоды',n:'Банан',k:89,p:1.1,c:23,f:0.3,d:120},
+ {g:'Фрукты и ягоды',n:'Яблоко',k:52,p:0.3,c:14,f:0.2,d:180},
+ {g:'Фрукты и ягоды',n:'Апельсин',k:47,p:0.9,c:12,f:0.1,d:180},
+ {g:'Фрукты и ягоды',n:'Мандарин',k:53,p:0.8,c:13,f:0.3,d:80},
+ {g:'Фрукты и ягоды',n:'Груша',k:57,p:0.4,c:15,f:0.1,d:180},
+ {g:'Фрукты и ягоды',n:'Виноград',k:69,p:0.7,c:18,f:0.2,d:150},
+ {g:'Фрукты и ягоды',n:'Киви',k:61,p:1.1,c:15,f:0.5,d:75},
+ {g:'Фрукты и ягоды',n:'Клубника',k:32,p:0.7,c:7.7,f:0.3,d:150},
+ {g:'Фрукты и ягоды',n:'Черника',k:57,p:0.7,c:14,f:0.3,d:100},
+ {g:'Фрукты и ягоды',n:'Авокадо',k:160,p:2,c:8.5,f:15,d:100},
+ {g:'Фрукты и ягоды',n:'Изюм',k:299,p:3.1,c:79,f:0.5,d:30},
+ {g:'Фрукты и ягоды',n:'Финики',k:282,p:2.5,c:75,f:0.4,d:40},
+ {g:'Орехи и семена',n:'Арахис',k:567,p:26,c:16,f:49,d:30},
+ {g:'Орехи и семена',n:'Арахисовая паста',k:588,p:25,c:20,f:50,d:20},
+ {g:'Орехи и семена',n:'Миндаль',k:579,p:21,c:22,f:50,d:30},
+ {g:'Орехи и семена',n:'Грецкий орех',k:654,p:15,c:14,f:65,d:30},
+ {g:'Орехи и семена',n:'Кешью',k:553,p:18,c:30,f:44,d:30},
+ {g:'Орехи и семена',n:'Фундук',k:628,p:15,c:17,f:61,d:30},
+ {g:'Орехи и семена',n:'Семечки подсолнечника',k:584,p:21,c:20,f:51,d:30},
+ {g:'Масла и соусы',n:'Масло растительное',k:884,p:0,c:0,f:100,d:10},
+ {g:'Масла и соусы',n:'Масло сливочное',k:717,p:0.9,c:0.1,f:81,d:10},
+ {g:'Масла и соусы',n:'Майонез',k:680,p:1,c:0.6,f:75,d:15},
+ {g:'Масла и соусы',n:'Кетчуп',k:101,p:1,c:27,f:0.1,d:20},
+ {g:'Масла и соусы',n:'Мёд',k:304,p:0.3,c:82,f:0,d:15},
+ {g:'Масла и соусы',n:'Сахар',k:387,p:0,c:100,f:0,d:5},
+ {g:'Масла и соусы',n:'Варенье, джем',k:278,p:0.4,c:69,f:0.1,d:20},
+ {g:'Сладкое и снеки',n:'Шоколад молочный',k:535,p:7.6,c:59,f:30,d:25},
+ {g:'Сладкое и снеки',n:'Шоколад тёмный 70%',k:598,p:7.8,c:46,f:43,d:25},
+ {g:'Сладкое и снеки',n:'Печенье овсяное',k:450,p:6.2,c:69,f:18,d:30},
+ {g:'Сладкое и снеки',n:'Пончик глазированный',k:421,p:4.9,c:49,f:23,d:60},
+ {g:'Сладкое и снеки',n:'Мороженое ванильное',k:207,p:3.5,c:24,f:11,d:80},
+ {g:'Сладкое и снеки',n:'Сырок глазированный',k:407,p:8.5,c:32,f:27,d:45},
+ {g:'Сладкое и снеки',n:'Чипсы картофельные',k:536,p:7,c:53,f:35,d:30},
+ {g:'Сладкое и снеки',n:'Протеиновый батончик',k:360,p:30,c:35,f:12,d:60},
+ {g:'Готовые блюда',n:'Пельмени варёные',k:248,p:11,c:25,f:12,d:250},
+ {g:'Готовые блюда',n:'Плов с курицей',k:170,p:7,c:22,f:6,d:300},
+ {g:'Готовые блюда',n:'Борщ',k:50,p:1.5,c:6,f:2.2,d:300},
+ {g:'Готовые блюда',n:'Сырники',k:230,p:14,c:22,f:10,d:150},
+ {g:'Готовые блюда',n:'Шаурма с курицей',k:210,p:12,c:18,f:10,d:300},
+ {g:'Готовые блюда',n:'Бургер',k:254,p:13,c:30,f:9,d:200},
+ {g:'Готовые блюда',n:'Пицца с сыром',k:266,p:11,c:33,f:10,d:200},
+ {g:'Готовые блюда',n:'Картофель фри',k:312,p:3.4,c:41,f:15,d:120},
+ {g:'Готовые блюда',n:'Куриные наггетсы',k:296,p:15,c:16,f:19,d:120},
+ {g:'Готовые блюда',n:'Роллы «Калифорния»',k:146,p:4.5,c:23,f:4,d:200},
+ {g:'Напитки',n:'Сок апельсиновый',k:45,p:0.7,c:10.4,f:0.2,d:250},
+ {g:'Напитки',n:'Кола',k:42,p:0,c:10.6,f:0,d:330},
+ {g:'Напитки',n:'Энергетик',k:45,p:0,c:11,f:0,d:250},
+ {g:'Напитки',n:'Латте на молоке',k:45,p:2.6,c:4,f:2,d:300},
+ {g:'Напитки',n:'Пиво светлое',k:43,p:0.5,c:3.6,f:0,d:500},
+ {g:'Напитки',n:'Квас',k:27,p:0.2,c:5.2,f:0,d:500},
+ {g:'Спортпит',n:'Сывороточный протеин',k:380,p:75,c:8,f:5,d:30},
+ {g:'Спортпит',n:'Казеин',k:360,p:78,c:6,f:2,d:30},
+ {g:'Спортпит',n:'Гейнер',k:380,p:20,c:70,f:3,d:100}
+];
+const EX={
+ 'Грудь':['Жим штанги лёжа','Жим штанги на наклонной','Жим гантелей лёжа','Жим гантелей на наклонной','Жим в тренажёре','Отжимания от пола','Отжимания на брусьях','Разводка гантелей','Кроссовер','Бабочка (пек-дек)'],
+ 'Спина':['Подтягивания','Подтягивания обратным хватом','Тяга верхнего блока','Тяга горизонтального блока','Тяга штанги в наклоне','Тяга гантели одной рукой','Тяга Т-грифа','Становая тяга','Гиперэкстензия','Пуловер на блоке'],
+ 'Ноги':['Приседания со штангой','Фронтальные приседания со штангой','Гоблет-присед','Жим ногами','Гакк-присед','Болгарские сплит-приседания','Выпады с гантелями','Румынская тяга','Ягодичный мост со штангой','Сгибание ног в тренажёре','Разгибание ног в тренажёре','Подъёмы на носки'],
+ 'Плечи':['Армейский жим штанги','Жим гантелей сидя','Жим Арнольда','Махи гантелями в стороны','Махи в стороны на блоке','Махи в наклоне','Обратная бабочка','Тяга к лицу','Тяга штанги к подбородку','Шраги с гантелями'],
+ 'Руки':['Подъём штанги на бицепс','Подъём гантелей на бицепс','Молотки','Сгибания на наклонной скамье','Сгибания на блоке','Французский жим','Жим штанги узким хватом','Разгибание рук на блоке','Разгибание из-за головы','Отжимания от скамьи'],
+ 'Пресс':['Скручивания','Скручивания на блоке','Подъём ног в висе','Подъём коленей на брусьях','Обратные скручивания','Ролик для пресса','Русские скручивания','Велосипед']
+};
+const COMPOUND=new Set(['Жим штанги лёжа','Жим штанги на наклонной','Жим гантелей лёжа','Жим гантелей на наклонной','Жим в тренажёре','Отжимания от пола','Отжимания на брусьях',
+ 'Подтягивания','Подтягивания обратным хватом','Тяга верхнего блока','Тяга горизонтального блока','Тяга штанги в наклоне','Тяга гантели одной рукой','Тяга Т-грифа','Становая тяга',
+ 'Приседания со штангой','Фронтальные приседания со штангой','Гоблет-присед','Жим ногами','Гакк-присед','Болгарские сплит-приседания','Выпады с гантелями','Румынская тяга','Ягодичный мост со штангой',
+ 'Армейский жим штанги','Жим гантелей сидя','Жим Арнольда','Тяга штанги к подбородку','Жим штанги узким хватом','Отжимания от скамьи']);
+const PRESS={'Руки':.5,'Плечи':.5},PULL={'Руки':.5};
+const SECONDARY={
+ 'Жим штанги лёжа':PRESS,'Жим штанги на наклонной':PRESS,'Жим гантелей лёжа':PRESS,'Жим гантелей на наклонной':PRESS,'Жим в тренажёре':PRESS,'Отжимания от пола':PRESS,'Отжимания на брусьях':PRESS,
+ 'Подтягивания':PULL,'Подтягивания обратным хватом':PULL,'Тяга верхнего блока':PULL,'Тяга горизонтального блока':PULL,'Тяга штанги в наклоне':PULL,'Тяга гантели одной рукой':PULL,'Тяга Т-грифа':PULL,
+ 'Становая тяга':{'Ноги':.5},'Армейский жим штанги':{'Руки':.5},'Жим гантелей сидя':{'Руки':.5},'Жим Арнольда':{'Руки':.5},'Тяга к лицу':{'Спина':.5},'Махи в наклоне':{'Спина':.5},
+ 'Жим штанги узким хватом':{'Грудь':.5},'Отжимания от скамьи':{'Грудь':.5}
+};
+const SLOTS=['Завтрак','Обед','Перекус','Ужин'];
+const GOALKEYS=['kcal','p','c','f','train','water','restC','restI'];
+const DEF={kcal:2400,p:140,c:280,f:75,train:3,water:8,restC:150,restI:90,profile:null,foods:[],program:null};
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+const fmt1=n=>(Math.round(n*10)/10).toLocaleString('ru-RU');
+const r1=n=>Math.round(n*10)/10;
+const uidGen=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const numIn=v=>{const n=+String(v).replace(',','.');return isFinite(n)?n:NaN;};
+function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dateOf(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);}
+function addDays(k,n){const d=dateOf(k);d.setDate(d.getDate()+n);return keyOf(d);}
+function plural(n,f){const a=n%10,b=n%100;return a===1&&b!==11?f[0]:a>=2&&a<=4&&(b<10||b>=20)?f[1]:f[2];}
+const dlShort=k=>dateOf(k).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+const TODAY=keyOf(new Date());
+
+let days={},settings=clone(DEF),cur=TODAY,mode='loading',db=null,base='',loaded=false;
+let tab='food',group='Грудь',selRir=null;
+try{const t=localStorage.getItem('gl-tab');if(['food','gym','progress','goals'].includes(t))tab=t;}catch(e){}
+
+function newDay(k){return {date:k,meals:[],sets:[],water:0};}
+function getDay(k){const d=days[k]||newDay(k);d.meals=d.meals||[];d.sets=d.sets||[];return d;}
+const isBarbell=n=>/штанг|^Румынская тяга$|Становая/i.test(n);
+function e1rm(w,r,rir){const t=r+(rir>0?rir:0);return t<=1?w:w*(1+t/30);}
+function exMeta(name){const comp=COMPOUND.has(name)||isBarbell(name);const bw=typeof isBW==='function'&&isBW(name);
+  const pd=bw&&/^(pullup|dip)/.test(REQ[name]||'');let lo,hi;
+  if(bw){lo=pd?5:comp?10:12;hi=pd?12:comp?20:25;}else{lo=comp?6:10;hi=comp?10:15;}
+  return {comp,bw,lo,hi,inc:isBarbell(name)?2.5:2,rest:(comp&&!bw)||pd?settings.restC:settings.restI};}
+function latestWeight(k){const ks=Object.keys(days).filter(x=>x<=k&&days[x].weight>0).sort();return ks.length?days[ks[ks.length-1]].weight:null;}
+function slotNow(){const h=new Date().getHours();return h<11?'Завтрак':h<16?'Обед':h<18?'Перекус':'Ужин';}
+const isFocus=g=>((settings.profile&&settings.profile.focus)||[]).includes(g);
+const myFoods=()=>settings.foods||[];
+
+/* ---------- storage ---------- */
+function loadLocal(){try{const raw=localStorage.getItem('gl-data');if(raw){const o=JSON.parse(raw);days=o.days||{};settings={...clone(DEF),...(o.settings||{})};}}catch(e){}}
+function saveLocal(){try{localStorage.setItem('gl-data',JSON.stringify({days,settings}));}catch(e){toast('Браузер не дал сохранить запись.');}}
+const writing={},dirty={};
+async function persist(docId,body){
+  if(mode!=='cloud'){saveLocal();return;}
+  if(writing[docId]){dirty[docId]=body;return;}
+  writing[docId]=true;
+  try{const b=body();if(b===null)await db.collection(base).doc(docId).delete();else await db.collection(base).doc(docId).set(b);}
+  catch(e){toast(e&&e.code==='quota_exceeded'?'Хранилище заполнено, запись не сохранилась.':'Не удалось сохранить. Проверь интернет и повтори.');}
+  writing[docId]=false;
+  if(dirty[docId]){const b=dirty[docId];dirty[docId]=null;persist(docId,b);}
+}
+function saveSettings(){persist('settings',()=>clone(settings));}
+function mutateDay(k,fn){const d=clone(getDay(k));fn(d);days[k]=d;persist('day-'+k,()=>days[k]?clone(days[k]):null);render();}
+function onSnap(snap){
+  const nd={};
+  snap.docs.forEach(doc=>{const v=doc.data();if(!v)return;
+    if(doc.id==='settings')settings={...clone(DEF),...clone(v)};
+    else if(doc.id.startsWith('day-'))nd[doc.id.slice(4)]=clone(v);});
+  days=nd;loaded=true;afterLoad();
+}
+function afterLoad(){buildProducts();render();fillGoals();renderGroups();exChange(false);}
+(async()=>{
+  await null;
+  let ok=false;
+  try{
+    if(window.claude&&typeof claude.use==='function'){
+      const [d,u]=await Promise.all([claude.use('db'),claude.use('user')]);
+      if(d&&u){const id=await u.id();
+        if(id){db=d;base='data/users/'+id;mode='cloud';ok=true;
+          db.collection(base).onSnapshot(onSnap,()=>toast('Связь с хранилищем прервалась. Обнови страницу.'));}}
+    }
+  }catch(e){}
+  if(!ok){mode='local';loadLocal();loaded=true;afterLoad();}
+  $('storeStatus').textContent=mode==='cloud'
+    ?'В твоём личном разделе этой страницы. Видишь их только ты, и они доступны с любого устройства, где ты вошёл в Claude.'
+    :'На этом телефоне, внутри приложения. Если удалить приложение или очистить данные сайта, записи удалятся, поэтому раз в 1–2 недели сохраняй копию.';
+})();
+
+/* ---------- toast, sheet, confirm ---------- */
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3000);}
+let lastFocus=null;
+function openSheet(html){lastFocus=document.activeElement;$('sheetBody').innerHTML=html;$('sheet').hidden=false;const f=$('sheetBody').querySelector('input,select,button');if(f)f.focus();}
+function closeSheet(){$('sheet').hidden=true;$('sheetBody').innerHTML='';if(lastFocus&&lastFocus.focus)lastFocus.focus();}
+$('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('sheet').hidden)closeSheet();});
+let confirmFn=null;
+function confirmAsk(title,text,btn,fn){confirmFn=fn;
+  openSheet(`<h2>${esc(title)}</h2><p style="margin:0" class="muted">${esc(text)}</p><div class="grid2"><button type="button" class="btn ghost" data-close>Отмена</button><button type="button" class="btn danger" id="confirmYes">${esc(btn)}</button></div>`);}
+$('sheetBody').addEventListener('click',e=>{
+  if(e.target.closest('[data-close]'))closeSheet();
+  else if(e.target.closest('#confirmYes')){const f=confirmFn;confirmFn=null;closeSheet();f&&f();}
+});
+
+/* ---------- header & tabs ---------- */
+function renderHeader(){
+  const d=dateOf(cur);
+  const wd=d.toLocaleDateString('ru-RU',{weekday:'long'});
+  const dm=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+  $('dateLabel').textContent=cur===TODAY?'Сегодня':cur===addDays(TODAY,-1)?'Вчера':dm;
+  $('dateSub').textContent=cur===TODAY||cur===addDays(TODAY,-1)?wd+', '+dm:wd;
+  $('next').style.visibility=cur>=TODAY?'hidden':'visible';
+}
+function setTab(t){tab=t;try{localStorage.setItem('gl-tab',t);}catch(e){}
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  ['food','gym','progress','goals'].forEach(x=>$('tab-'+x).hidden=x!==t);}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+$('prev').onclick=()=>{cur=addDays(cur,-1);render();exChange(false);};
+$('next').onclick=()=>{if(cur<TODAY){cur=addDays(cur,1);render();exChange(false);}};
+
+/* ---------- food ---------- */
+function allProducts(){return [...myFoods().map((f,i)=>({...f,g:'Мои продукты',key:'m:'+i,mine:i})),...PRODUCTS.map((p,i)=>({...p,key:'p:'+i}))];}
+function selectedProduct(){const v=$('prod').value;if(!v||v==='custom')return null;return allProducts().find(p=>p.key===v)||null;}
+function buildProducts(){
+  const q=$('foodSearch').value.trim().toLowerCase();const prev=$('prod').value;
+  const list=allProducts().filter(p=>!q||p.n.toLowerCase().includes(q)||p.g.toLowerCase().includes(q));
+  const groups=[...new Set(list.map(p=>p.g))];
+  let h='';groups.forEach(g=>{h+=`<optgroup label="${esc(g)}">`;list.filter(p=>p.g===g).forEach(p=>h+=`<option value="${p.key}">${esc(p.n)}</option>`);h+='</optgroup>';});
+  h+=`<option value="custom">${q&&!list.length?'Ничего не нашлось — добавить своё…':'Своё блюдо или продукт…'}</option>`;
+  $('prod').innerHTML=h;
+  if([...$('prod').options].some(o=>o.value===prev))$('prod').value=prev;
+  else if(!list.length){$('prod').value='custom';if(q&&!$('cName').value)$('cName').value=$('foodSearch').value.trim();}
+  prodChange(prev!==$('prod').value);
+  $('myFoodsCount').textContent=myFoods().length?'Сохранено: '+myFoods().length:'Пока ничего не сохранено';
+}
+$('foodSearch').addEventListener('input',buildProducts);
+function prodChange(resetGrams){const v=$('prod').value,c=v==='custom';$('customFields').hidden=!c;
+  const p=selectedProduct();$('delMine').hidden=!(p&&p.mine!==undefined);
+  if(p&&resetGrams!==false)$('grams').value=p.d||100;if(c&&resetGrams!==false&&!$('grams').value)$('grams').value=100;
+  $('foodErr').hidden=true;preview();}
+$('prod').addEventListener('change',()=>prodChange(true));
+function currentFood(){
+  const g=numIn($('grams').value);const p=selectedProduct();
+  let b;
+  if(p)b={n:p.n,k:p.k,p:p.p,c:p.c,f:p.f};
+  else b={n:$('cName').value.trim(),k:numIn($('cK').value)||0,p:numIn($('cP').value)||0,c:numIn($('cC').value)||0,f:numIn($('cF').value)||0};
+  const m=(g>0?g:0)/100;
+  return {base:b,name:b.n,grams:g,kcal:b.k*m,p:b.p*m,c:b.c*m,f:b.f*m,ok:g>0&&(p||(b.n&&b.k>0)),custom:!p};
+}
+function preview(){const f=currentFood();
+  $('foodPreview').innerHTML=`<span><b class="num" style="font-size:18px">${fmt(f.kcal)} ккал</b></span><span class="muted">Белок ${fmt1(f.p)} г · Углеводы ${fmt1(f.c)} г · Жиры ${fmt1(f.f)} г</span>`;}
+['grams','cName','cK','cP','cC','cF'].forEach(id=>$(id).addEventListener('input',()=>{$('foodErr').hidden=true;preview();}));
+function nowTime(){if(cur!==TODAY)return '';const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+function addMeal(m){mutateDay(cur,d=>d.meals.push({id:uidGen(),slot:$('slot').value,time:nowTime(),...m}));toast('Добавлено: '+m.name);}
+function mealFrom(base,grams){const m=grams/100;return {name:base.n,grams,base:{k:base.k,p:base.p,c:base.c,f:base.f},kcal:Math.round(base.k*m),p:r1(base.p*m),c:r1(base.c*m),f:r1(base.f*m)};}
+$('foodForm').addEventListener('submit',e=>{e.preventDefault();
+  const f=currentFood();
+  if(!f.ok){const err=$('foodErr');err.textContent=f.custom?'Впиши название, калории на 100 г и граммы.':'Укажи вес порции в граммах.';err.hidden=false;return;}
+  if(f.custom&&$('cSave').checked&&!myFoods().some(x=>x.n.toLowerCase()===f.base.n.toLowerCase())){
+    settings={...settings,foods:[...myFoods(),{n:f.base.n,k:f.base.k,p:f.base.p,c:f.base.c,f:f.base.f,d:f.grams}]};saveSettings();}
+  addMeal(mealFrom(f.base,f.grams));
+  if(f.custom){['cName','cK','cP','cC','cF'].forEach(id=>$(id).value='');$('foodSearch').value='';buildProducts();}
+});
+$('delMine').onclick=()=>{const p=selectedProduct();if(!p||p.mine===undefined)return;
+  confirmAsk('Убрать продукт?','«'+p.n+'» исчезнет из твоих продуктов. Уже записанная еда останется.','Убрать',()=>{
+    settings={...settings,foods:myFoods().filter((_,i)=>i!==p.mine)};saveSettings();$('prod').value='';buildProducts();toast('Продукт убран');});};
+function recentFoods(){
+  const out=[],seen=new Set();
+  Object.keys(days).sort().reverse().forEach(k=>{[...(days[k].meals||[])].reverse().forEach(m=>{const key=m.name+'|'+(m.grams||'');if(!seen.has(key)&&out.length<6){seen.add(key);out.push(m);}});});
+  return out;
+}
+$('recent').addEventListener('click',e=>{const b=e.target.closest('[data-recent]');if(!b)return;const m=recentFoods()[+b.dataset.recent];if(!m)return;
+  const c=clone(m);delete c.id;delete c.slot;delete c.time;addMeal(c);});
+function renderFood(){
+  const d=getDay(cur);const t=d.meals.reduce((a,m)=>({k:a.k+m.kcal,p:a.p+m.p,c:a.c+m.c,f:a.f+m.f}),{k:0,p:0,c:0,f:0});
+  const left=settings.kcal-t.k,bw=latestWeight(cur),perMeal=bw?Math.round(bw*0.4):null;
+  const pct=(v,g)=>Math.min(100,g>0?v/g*100:0);
+  const mrow=(lbl,cls,v,g)=>`<div class="macro"><span><span class="dot ${cls}"></span>${lbl}</span><div class="track"><i class="${cls}" style="width:${pct(v,g)}%"></i></div><span class="v">${fmt(v)} / ${fmt(g)} г</span></div>`;
+  const bySlot={};d.meals.forEach(m=>{const s=SLOTS.includes(m.slot)?m.slot:'Перекус';(bySlot[s]=bySlot[s]||[]).push(m);});
+  const slotP=s=>(bySlot[s]||[]).reduce((a,m)=>a+m.p,0);
+  const hits=SLOTS.filter(s=>perMeal&&slotP(s)>=perMeal).length;
+  const protLine=bw?`<div class="small muted">Белок ${fmt1(t.p/bw)} г/кг веса · приёмов с ≥${perMeal} г белка: <b style="color:var(--fg)">${hits}</b> из 4</div>`
+    :`<div class="small muted">Запиши вес тела во вкладке «Прогресс», чтобы видеть белок в г/кг и цель на каждый приём.</div>`;
+  $('foodSummary').innerHTML=`
+    <div class="row" style="align-items:flex-end">
+      <div><div class="big">${fmt(t.k)}</div><div class="small muted">из ${fmt(settings.kcal)} ккал</div></div>
+      <div style="text-align:right"><div class="num" style="font-size:22px;font-weight:600;color:${left<0?'var(--red)':'var(--fg)'}">${left<0?'+'+fmt(-left):fmt(left)}</div><div class="small muted">${left<0?'сверх цели':'осталось'}</div></div>
+    </div>
+    <div class="track" style="height:10px"><i class="c-ink" style="width:${pct(t.k,settings.kcal)}%"></i></div>
+    ${mrow('Белок','c-red',t.p,settings.p)}${mrow('Углеводы','c-blue',t.c,settings.c)}${mrow('Жиры','c-yellow',t.f,settings.f)}${protLine}`;
+  $('mealCount').textContent=d.meals.length?d.meals.length+' '+plural(d.meals.length,['запись','записи','записей']):'';
+  $('clearFood').hidden=!d.meals.length;
+  if(!loaded)$('mealList').innerHTML='<div class="empty">Загружаю дневник…</div>';
+  else if(!d.meals.length)$('mealList').innerHTML='<div class="empty">Пока ничего. Найди продукт выше, укажи граммы и нажми «Добавить».</div>';
+  else $('mealList').innerHTML=SLOTS.filter(s=>bySlot[s]).map(s=>{
+    const p=slotP(s),kc=bySlot[s].reduce((a,m)=>a+m.kcal,0);
+    const tag=perMeal&&s!=='Перекус'?(p>=perMeal?`<span class="tag ok">белок ${fmt(p)} г ✓</span>`:`<span class="tag">белок ${fmt(p)} из ${perMeal} г</span>`):`<span class="tag">белок ${fmt(p)} г</span>`;
+    return `<div class="slot"><div class="slothead"><h3>${s} · ${fmt(kc)} ккал</h3>${tag}</div>${bySlot[s].map(m=>`
+      <div class="item"><button type="button" class="itembtn" data-edit-meal="${m.id}"><span class="name">${esc(m.name)}</span><span class="meta">${m.time?m.time+' · ':''}${m.grams?fmt(m.grams)+' г · ':''}Б ${fmt1(m.p)} · У ${fmt1(m.c)} · Ж ${fmt1(m.f)}</span></button>
+      <div class="num" style="font-size:18px;font-weight:600">${fmt(m.kcal)}</div><button class="x" data-del-meal="${m.id}" aria-label="Удалить ${esc(m.name)}">×</button></div>`).join('')}</div>`;}).join('');
+  const rec=recentFoods();$('recentWrap').hidden=!rec.length;
+  $('recent').innerHTML=rec.map((m,i)=>`<button type="button" class="chip food" data-recent="${i}">${esc(m.name.length>24?m.name.slice(0,23)+'…':m.name)}<small>${m.grams?fmt(m.grams)+' г · ':''}${fmt(m.kcal)} ккал</small></button>`).join('');
+  const w=d.water||0,goal=settings.water;
+  $('waterTxt').textContent=w+' из '+goal+' '+plural(goal,['стакана','стаканов','стаканов']);
+  let gh='';for(let i=0;i<Math.max(goal,w);i++)gh+=`<button class="glass${i<w?' on':''}" data-water="${i+1}" aria-label="${i+1} ${plural(i+1,['стакан','стакана','стаканов'])}"></button>`;
+  $('water').innerHTML=gh;
+  $('sleepVal').value=d.sleep!=null?fmt1(d.sleep)+' ч':'—';
+  $('sleepTxt').textContent=d.sleep==null?'нажми + чтобы записать':d.sleep<7?'меньше 7 ч':'норма';
+}
+$('mealList').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del-meal]')?.dataset.delMeal;if(del){mutateDay(cur,d=>d.meals=d.meals.filter(m=>m.id!==del));toast('Запись удалена');return;}
+  const ed=e.target.closest('[data-edit-meal]')?.dataset.editMeal;if(ed)editMeal(ed);
+});
+function editMeal(id){
+  const m=getDay(cur).meals.find(x=>x.id===id);if(!m)return;
+  const hasBase=!!(m.base&&m.grams);
+  openSheet(`<h2>Исправить запись</h2>
+    <div class="field"><label for="eName">Название</label><input id="eName" value="${esc(m.name)}"></div>
+    <div class="grid2"><div class="field"><label for="eSlot">Приём</label><select id="eSlot">${SLOTS.map(s=>`<option${s===(m.slot||'Перекус')?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="field"><label for="eG">Граммы</label><input id="eG" type="number" inputmode="decimal" min="1" value="${m.grams||''}"></div></div>
+    ${hasBase?`<div class="hint" id="ePrev"></div><span class="small muted">БЖУ пересчитаются по граммам. Чтобы поправить сами цифры, удали запись и добавь своё блюдо.</span>`
+    :`<div class="grid2"><div class="field"><label for="eK">Ккал</label><input id="eK" type="number" inputmode="decimal" value="${m.kcal}"></div><div class="field"><label for="eP">Белок, г</label><input id="eP" type="number" inputmode="decimal" value="${m.p}"></div><div class="field"><label for="eC">Углеводы, г</label><input id="eC" type="number" inputmode="decimal" value="${m.c}"></div><div class="field"><label for="eF">Жиры, г</label><input id="eF" type="number" inputmode="decimal" value="${m.f}"></div></div>`}
+    <p class="err" id="eErr" hidden></p>
+    <div class="grid2"><button type="button" class="btn ghost warn" id="eDel">Удалить</button><button type="button" class="btn" id="eSave">Сохранить</button></div>`);
+  const upd=()=>{if(!hasBase)return;const g=numIn($('eG').value)||0,k=g/100;$('ePrev').innerHTML=`<b>${fmt(m.base.k*k)} ккал</b><span class="muted">Б ${fmt1(m.base.p*k)} · У ${fmt1(m.base.c*k)} · Ж ${fmt1(m.base.f*k)}</span>`;};
+  upd();$('eG').addEventListener('input',upd);
+  $('eDel').onclick=()=>{closeSheet();mutateDay(cur,d=>d.meals=d.meals.filter(x=>x.id!==id));toast('Запись удалена');};
+  $('eSave').onclick=()=>{
+    const name=$('eName').value.trim(),g=numIn($('eG').value);
+    if(!name){$('eErr').textContent='Впиши название.';$('eErr').hidden=false;return;}
+    let upd2;
+    if(hasBase){if(!(g>0)){$('eErr').textContent='Укажи граммы больше нуля.';$('eErr').hidden=false;return;}
+      upd2={...mealFrom({n:name,...m.base},g)};}
+    else{const k=numIn($('eK').value);if(!(k>=0)){$('eErr').textContent='Укажи калории.';$('eErr').hidden=false;return;}
+      upd2={name,grams:g>0?g:null,kcal:Math.round(k),p:r1(numIn($('eP').value)||0),c:r1(numIn($('eC').value)||0),f:r1(numIn($('eF').value)||0)};}
+    upd2.slot=$('eSlot').value;
+    closeSheet();mutateDay(cur,d=>{const x=d.meals.find(y=>y.id===id);if(x)Object.assign(x,upd2);});toast('Исправлено');
+  };
+}
+$('clearFood').onclick=()=>confirmAsk('Очистить еду за день?','Удалятся все записи еды за '+(cur===TODAY?'сегодня':dlShort(cur))+'. Вода, сон и тренировка останутся.','Очистить',()=>{mutateDay(cur,d=>d.meals=[]);toast('Еда за день очищена');});
+$('water').addEventListener('click',e=>{const n=+e.target.closest('[data-water]')?.dataset.water;if(!n)return;mutateDay(cur,d=>d.water=(d.water===n?n-1:n));});
+document.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{const s=+b.dataset.sleep;mutateDay(cur,d=>{if(d.sleep==null)d.sleep=7;else d.sleep=Math.min(14,Math.max(0,d.sleep+s));});});
+
+/* ---------- gym ---------- */
+function exercisesFor(g){
+  const av=availFor(settings.profile);
+  const extra=new Set();Object.values(days).forEach(d=>(d.sets||[]).forEach(s=>{if(s.group===g&&!EX[g].includes(s.ex))extra.add(s.ex);}));
+  return [...EX[g].filter(x=>canDo(x,av)),...extra];
+}
+function renderGroups(){
+  $('groups').innerHTML=Object.keys(EX).map(g=>`<button class="chip" type="button" data-group="${g}" aria-pressed="${g===group}">${g}</button>`).join('');
+  const prev=$('ex').value;const list=exercisesFor(group);
+  $('ex').innerHTML=list.map(n=>`<option>${esc(n)}</option>`).join('')+'<option value="__other">Другое упражнение…</option>';
+  if(list.includes(prev))$('ex').value=prev;
+  const p=settings.profile||{},pl=p.place||'gym';
+  $('placeNote').innerHTML=`Упражнения для: <b>${PLACES[pl]}</b>${pl==='home'?(p.equip&&p.equip.length?' ('+p.equip.map(k=>EQUIP[k].toLowerCase()).join(', ')+')':' (инвентарь не выбран)'):''} · <button type="button" class="linkbtn" data-goto="goals">изменить</button>`;
+}
+function renderRir(){
+  const opts=[[null,'—'],[0,'0'],[1,'1'],[2,'2'],[3,'3'],[4,'4+']];
+  $('rir').innerHTML=opts.map(([v,l])=>`<button type="button" class="chip" data-rir="${v===null?'':v}" aria-pressed="${selRir===v}" aria-label="${v===null?'Не указывать':'RIR '+l}">${l}</button>`).join('');
+}
+$('rir').addEventListener('click',e=>{const b=e.target.closest('[data-rir]');if(!b)return;selRir=b.dataset.rir===''?null:+b.dataset.rir;renderRir();});
+$('groups').addEventListener('click',e=>{const g=e.target.closest('[data-group]')?.dataset.group;if(!g)return;group=g;renderGroups();exChange(true);});
+function exName(){return $('ex').value==='__other'?$('customEx').value.trim():$('ex').value;}
+function exHistory(name){return Object.keys(days).sort().map(k=>({k,sets:(days[k].sets||[]).filter(s=>s.ex===name)})).filter(x=>x.sets.length);}
+function planFor(name){
+  const meta=exMeta(name);const h=exHistory(name).filter(x=>x.k<cur);const last=h[h.length-1];
+  if(!last)return null;
+  const topW=Math.max(...last.sets.map(s=>s.w));const atTop=last.sets.filter(s=>s.w===topW);
+  if(atTop.every(s=>s.r>=meta.hi)&&meta.bw&&topW===0){
+    let h=HARDER[name];if(h&&!canDo(h,availFor(settings.profile)))h=null;const band=/^band/.test(REQ[name]||'');
+    return {w:0,r:meta.lo,text:h?`Все подходы дошли до ${meta.hi} повторов. Пора усложнить: переходи на <b>«${esc(h)}»</b>.`
+      :band?`Все подходы дошли до ${meta.hi} повторов. Возьми <b>резинку жёстче</b> или сложи две.`
+      :`Все подходы дошли до ${meta.hi} повторов. Усложни: <b>опускайся 3–4 секунды</b> или надень рюкзак с книгами или бутылками воды и записывай его вес.`};}
+  if(atTop.every(s=>s.r>=meta.hi))
+    return {w:r1(topW+meta.inc),r:meta.lo,text:`Все подходы с ${fmt1(topW)} кг дошли до ${meta.hi} повторов. Пора прибавить: <b>${fmt1(topW+meta.inc)} кг на ${meta.lo}–${meta.lo+2} повторов</b>.`};
+  const best=Math.max(...atTop.map(s=>s.r));
+  return {w:topW,r:Math.min(meta.hi,best+1),text:`Оставь <b>${fmt1(topW)} кг</b> и добавь по повтору. Когда все подходы дойдут до ${meta.hi}, прибавишь ${fmt1(meta.inc)} кг.`};
+}
+function fmtSec(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function exChange(prefill){
+  $('customExField').hidden=$('ex').value!=='__other';$('setErr').hidden=true;
+  const name=exName();const h=exHistory(name);const meta=exMeta(name);
+  const before=h.filter(x=>x.k<cur);const last=before[before.length-1];
+  let html='';
+  if(!name)html='<span class="muted">Впиши название упражнения.</span>';
+  else{
+    html=`<span class="muted">${meta.comp?'Базовое':'Изолирующее'} · диапазон ${meta.lo}–${meta.hi} повторов · отдых ${fmtSec(meta.rest)}</span>`;
+    if(last){html+=`<span><b>Прошлый раз, ${dlShort(last.k)}:</b> ${last.sets.map(s=>fmt1(s.w)+'×'+s.r+(s.rir!=null?' @'+s.rir:'')).join(', ')}</span>`;
+      const p=planFor(name);if(p)html+=`<span class="plan">${p.text}</span>`;}
+    else html+=meta.bw?`<span>Первый раз записываешь это упражнение. Вес оставь 0, а повторы делай почти до отказа — с запасом 1–2.</span>`
+      :`<span>Первый раз записываешь это упражнение. Начни с веса, который поднимешь на ${meta.hi} повторов с запасом 2–3 повтора.</span>`;
+    let best=null;h.forEach(x=>x.sets.forEach(s=>{const v=e1rm(s.w,s.r,s.rir);if(!best||v>best.v)best={v,s};}));
+    if(best&&best.s.w>0)html+=`<span class="muted">Рекорд: ${fmt1(best.s.w)} кг × ${best.s.r}, расчётный максимум ${fmt1(best.v)} кг</span>`;
+    else if(h.length&&meta.bw){const mr=Math.max(...h.flatMap(x=>x.sets.map(s=>s.r)));html+=`<span class="muted">Рекорд: ${mr} ${plural(mr,['повтор','повтора','повторов'])} за подход</span>`;}
+  }
+  $('lastTime').innerHTML=html;
+  if(prefill&&name){
+    const todays=getDay(cur).sets.filter(s=>s.ex===name);const p=planFor(name);
+    if(todays.length){const s=todays[todays.length-1];$('w').value=s.w;$('r').value=s.r;}
+    else if(p){$('w').value=p.w;$('r').value=p.r;}
+    else if(meta.bw){$('w').value=0;$('r').value=meta.lo;}
+  }
+  renderPlates();
+}
+$('ex').addEventListener('change',()=>exChange(true));
+$('customEx').addEventListener('input',()=>exChange(false));
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const [f,s]=b.dataset.step.split(':');const el=$(f);const v=Math.max(f==='r'?1:0,(numIn(el.value)||0)+ +s);el.value=Math.round(v*100)/100;renderPlates();$('setErr').hidden=true;});
+['w','r'].forEach(id=>$(id).addEventListener('input',()=>{renderPlates();$('setErr').hidden=true;}));
+function renderPlates(){
+  const name=exName(),w=numIn($('w').value);
+  if(!isBarbell(name)||!(w>20)){$('plates').innerHTML='';return;}
+  let side=(w-20)/2;const sizes=[25,20,15,10,5,2.5,1.25],used=[];
+  sizes.forEach(p=>{while(side>=p-1e-9){used.push(p);side-=p;}});
+  const cls={25:'p25',20:'p20',15:'p15',10:'p10',5:'p5',2.5:'p2',1.25:'p1'};
+  const left=[...used].reverse().map(p=>`<span class="plate ${cls[p]}"></span>`).join('');
+  const right=used.map(p=>`<span class="plate ${cls[p]}"></span>`).join('');
+  $('plates').innerHTML=`<div class="hint"><b>Блины на каждую сторону: ${used.length?used.map(fmt1).join(' + '):'без блинов'}</b>
+   <span class="muted">Олимпийский гриф 20 кг${side>0.01?'. Ровно этот вес не собрать, не хватает '+fmt1(side*2)+' кг':''}</span>
+   <div class="bar" aria-hidden="true"><span class="rod" style="width:24px"></span>${left}<span class="collar"></span><span class="rod" style="flex:1;min-width:30px"></span><span class="collar"></span>${right}<span class="rod" style="width:24px"></span></div></div>`;
+}
+$('addSet').onclick=()=>{
+  const name=exName(),w=numIn($('w').value),r=Math.round(numIn($('r').value));
+  const err=$('setErr');
+  if(!name){err.textContent='Впиши название упражнения.';err.hidden=false;return;}
+  if(!(w>=0)||!(r>=1)){err.textContent='Укажи вес (можно 0 для своего веса) и хотя бы 1 повтор.';err.hidden=false;return;}
+  unlockAudio();
+  const set={id:uidGen(),ex:name,group,w,r};if(selRir!==null)set.rir=selRir;
+  mutateDay(cur,d=>{d.sets.push(set);const pr=settings.program;if(pr&&selProg!=null&&d.prog==null&&pr.days[selProg]&&pr.days[selProg].items.some(i=>i.ex===name))d.prog=selProg;});
+  if($('ex').value==='__other'){renderGroups();$('ex').value=name;$('customExField').hidden=true;}
+  exChange(false);
+  if(cur===TODAY)startRest(exMeta(name).rest);else toast('Подход записан: '+fmt1(w)+' кг × '+r);
+};
+function weekStart(k){const d=dateOf(k);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return keyOf(d);}
+const trained=k=>(days[k]?.sets||[]).length>0;
+function weeklyVolume(ws){
+  const v={};Object.keys(EX).forEach(g=>v[g]=0);
+  for(let i=0;i<7;i++)(days[addDays(ws,i)]?.sets||[]).forEach(s=>{if(v[s.group]!==undefined)v[s.group]+=1;const sec=SECONDARY[s.ex];if(sec)Object.entries(sec).forEach(([g,f])=>v[g]+=f);});
+  return v;
+}
+function renderGym(){
+  const ws=weekStart(cur);let cnt=0,cells='';
+  const names=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  for(let i=0;i<7;i++){const k=addDays(ws,i);const on=trained(k);if(on)cnt++;
+    cells+=`<div><div>${names[i]}</div><div class="d${on?' on':''}${k===TODAY?' today':''}${k>TODAY?' future':''}">${dateOf(k).getDate()}</div></div>`;}
+  $('weekCard').innerHTML=`<div class="row"><h2>Неделя</h2><span class="num" style="font-size:20px;font-weight:600">${cnt} <span class="muted" style="font-size:15px">из ${settings.train} тренировок</span></span></div><div class="week">${cells}</div>`;
+  const vol=weeklyVolume(ws),MAX=24;
+  $('volCard').innerHTML=`<h2>Подходы на мышцы за неделю</h2>
+    ${Object.entries(vol).map(([g,v])=>{const f=isFocus(g),lo=f?14:10;const st=v<lo?['','мало']:v<=20?['ok','в зоне роста']:['hi','много'];
+      return `<div class="vol"><span>${f?'<b>'+g+'</b>':g}</span><div class="track"><span class="zone" style="left:${lo/MAX*100}%;width:${(20-lo)/MAX*100}%"></span><span class="fill" style="width:${Math.min(100,v/MAX*100)}%"></span></div><span class="v">${fmt1(v)}</span><span><span class="tag ${st[0]}">${st[1]}</span></span></div>`;}).join('')}
+    <p class="small muted" style="margin:0">Зелёная зона — 10–20 подходов в неделю, для приоритетных мышц (жирным) — 14–20. Прямые подходы считаются целиком, косвенные за половину: жим лёжа даёт 0,5 подхода рукам и плечам.</p>`;
+  const sets=getDay(cur).sets;
+  const byEx={};sets.forEach(s=>(byEx[s.ex]=byEx[s.ex]||[]).push(s));
+  $('tonnage').textContent=sets.length?'Тоннаж '+fmt(sets.reduce((a,s)=>a+s.w*s.r,0))+' кг':'';
+  $('clearSets').hidden=!sets.length;
+  $('setList').innerHTML=!loaded?'<div class="empty">Загружаю дневник…</div>':sets.length?Object.entries(byEx).map(([ex,ss])=>`
+    <div class="exblock"><div class="row"><b>${esc(ex)}</b><span class="small muted num">${fmt(ss.reduce((a,s)=>a+s.w*s.r,0))} кг</span></div>
+    ${ss.map((s,i)=>`<div class="setrow"><span class="n">${i+1}</span><button type="button" class="itembtn" data-edit-set="${s.id}">${fmt1(s.w)} кг × ${s.r}${s.rir!=null?` <span class="muted" style="font-size:14px">RIR ${s.rir===4?'4+':s.rir}</span>`:''}</button><span class="small muted">≈${fmt1(e1rm(s.w,s.r,s.rir))}</span><button class="x" data-del-set="${s.id}" aria-label="Удалить подход">×</button></div>`).join('')}</div>`).join('')
+    :'<div class="empty">В этот день подходов нет. Выбери группу мышц и упражнение выше.</div>';
+}
+$('setList').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del-set]')?.dataset.delSet;if(del){mutateDay(cur,d=>d.sets=d.sets.filter(s=>s.id!==del));toast('Подход удалён');return;}
+  const ed=e.target.closest('[data-edit-set]')?.dataset.editSet;if(ed)editSet(ed);
+});
+function editSet(id){
+  const s=getDay(cur).sets.find(x=>x.id===id);if(!s)return;
+  openSheet(`<h2>Исправить подход</h2><p class="small muted" style="margin:0">${esc(s.ex)}</p>
+    <div class="grid3"><div class="field"><label for="sW">Вес, кг</label><input id="sW" type="number" inputmode="decimal" min="0" step="0.5" value="${s.w}"></div>
+    <div class="field"><label for="sR">Повторы</label><input id="sR" type="number" inputmode="numeric" min="1" value="${s.r}"></div>
+    <div class="field"><label for="sRir">RIR</label><select id="sRir"><option value="">—</option>${[0,1,2,3,4].map(v=>`<option value="${v}"${s.rir===v?' selected':''}>${v===4?'4+':v}</option>`).join('')}</select></div></div>
+    <p class="err" id="sErr" hidden></p>
+    <div class="grid2"><button type="button" class="btn ghost warn" id="sDel">Удалить</button><button type="button" class="btn" id="sSave">Сохранить</button></div>`);
+  $('sDel').onclick=()=>{closeSheet();mutateDay(cur,d=>d.sets=d.sets.filter(x=>x.id!==id));toast('Подход удалён');};
+  $('sSave').onclick=()=>{const w=numIn($('sW').value),r=Math.round(numIn($('sR').value)),rv=$('sRir').value;
+    if(!(w>=0)||!(r>=1)){$('sErr').textContent='Укажи вес от 0 и хотя бы 1 повтор.';$('sErr').hidden=false;return;}
+    closeSheet();mutateDay(cur,d=>{const x=d.sets.find(y=>y.id===id);if(!x)return;x.w=w;x.r=r;if(rv==='')delete x.rir;else x.rir=+rv;});exChange(false);toast('Исправлено');};
+}
+$('clearSets').onclick=()=>confirmAsk('Очистить тренировку?','Удалятся все подходы за '+(cur===TODAY?'сегодня':dlShort(cur))+'.','Очистить',()=>{mutateDay(cur,d=>d.sets=[]);exChange(false);toast('Тренировка очищена');});
+
+/* ---------- rest timer ---------- */
+let restEnd=0,restTotal=0,restIv=null,restDone=true,ac=null;
+function unlockAudio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}}
+function beep(){try{if(ac)[0,0.22].forEach(off=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;g.gain.setValueAtTime(0.0001,ac.currentTime+off);g.gain.exponentialRampToValueAtTime(0.3,ac.currentTime+off+0.02);g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+off+0.18);o.connect(g).connect(ac.destination);o.start(ac.currentTime+off);o.stop(ac.currentTime+off+0.2);});}catch(e){}
+  try{navigator.vibrate&&navigator.vibrate([200,100,200]);}catch(e){}}
+function startRest(sec){restTotal=sec;restEnd=Date.now()+sec*1000;restDone=false;$('restbar').hidden=false;$('restbar').classList.remove('done');$('restLbl').textContent='Отдых · подход записан';clearInterval(restIv);restIv=setInterval(tickRest,250);tickRest();}
+function tickRest(){
+  const left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));
+  $('restT').textContent=fmtSec(left);$('restFill').style.width=(restTotal?left/restTotal*100:0)+'%';
+  if(left<=0&&!restDone){restDone=true;clearInterval(restIv);beep();$('restbar').classList.add('done');$('restLbl').textContent='Можно делать следующий подход';
+    setTimeout(()=>{if(restDone)$('restbar').hidden=true;},10000);}
+}
+$('restMinus').onclick=()=>{if(restDone)return;restEnd-=15000;tickRest();};
+$('restPlus').onclick=()=>{if(restDone){restDone=false;restEnd=Date.now();restTotal=0;$('restbar').classList.remove('done');$('restLbl').textContent='Отдых';clearInterval(restIv);restIv=setInterval(tickRest,250);}
+  restEnd+=15000;restTotal=Math.max(restTotal,Math.ceil((restEnd-Date.now())/1000));tickRest();};
+$('restClose').onclick=()=>{clearInterval(restIv);restDone=true;$('restbar').hidden=true;};
+
+/* ---------- progress ---------- */
+function barChart(vals,labels,goal,cls,unit){
+  const W=520,H=180,pl=6,pr=6,pt=22,pb=26,n=vals.length,mx=Math.max(goal||0,...vals,1)*1.12,bw=(W-pl-pr)/n,ih=H-pt-pb;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="График за ${n} дней">`;
+  s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}"/>`;
+  vals.forEach((v,i)=>{const h=v>0?Math.max(2,v/mx*ih):3;const x=pl+i*bw+bw*.17,w=bw*.66;
+    s+=`<rect class="${v>0?cls:'b-empty'}" x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="3"/>`;
+    if(i%2===(n-1)%2)s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${labels[i]}</text>`;
+    if(i===n-1&&v>0)s+=`<text class="val" x="${(x+w/2).toFixed(1)}" y="${(H-pb-h-6).toFixed(1)}" text-anchor="middle">${fmt(v)}</text>`;});
+  if(goal>0){const y=H-pb-goal/mx*ih;s+=`<line class="goal" x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${pl+2}" y="${(y-6).toFixed(1)}">цель ${fmt(goal)} ${unit}</text>`;}
+  return s+'</svg>';
+}
+function weightSeries(){
+  const ks=Object.keys(days).filter(k=>days[k].weight>0).sort();
+  let tr=null;const A=0.1;
+  return ks.map(k=>{const w=days[k].weight;tr=tr===null?w:tr+A*(w-tr);return {k,w,t:tr};});
+}
+function renderWeight(){
+  const d=getDay(cur);if(document.activeElement!==$('bw'))$('bw').value=d.weight||'';
+  const lw=latestWeight(cur);$('bw').placeholder=lw?String(lw).replace('.',','):'72,5';
+  const ser=weightSeries();const el=$('bwChart');
+  $('wlist').innerHTML=ser.length?[...ser].reverse().slice(0,7).map(p=>`<div class="wrow"><span>${dlShort(p.k)}</span><span class="num" style="font-size:17px">${fmt1(p.w)} кг</span><button class="x" data-del-weight="${p.k}" aria-label="Удалить вес за ${dlShort(p.k)}">×</button></div>`).join('')
+    :'<p class="small muted" style="margin:4px 0 0">Записей веса пока нет.</p>';
+  if(!ser.length){el.innerHTML='<div class="empty">Взвешивайся утром после туалета и до еды и записывай сюда. Через неделю появится тренд.</div>';$('bwTrend').textContent='';return;}
+  const last=ser[ser.length-1];
+  const wk=ser.filter(p=>p.k<=addDays(last.k,-7));const delta=wk.length?last.t-wk[wk.length-1].t:null;
+  $('bwTrend').textContent='тренд '+fmt1(last.t)+' кг'+(delta!==null?' · за неделю '+(delta>0?'+':'')+fmt1(delta)+' кг':'');
+  const from=addDays(TODAY,-29);const pts=ser.filter(p=>p.k>=from);
+  if(!pts.length){el.innerHTML='<div class="empty">За последние 30 дней записей нет.</div>';return;}
+  const W=520,H=190,pl=40,pr=16,pt=16,pb=26;
+  let mn=Math.min(...pts.map(p=>Math.min(p.w,p.t))),mx=Math.max(...pts.map(p=>Math.max(p.w,p.t)));if(mx-mn<2){const m=(mx+mn)/2;mn=m-1;mx=m+1;}const pad=(mx-mn)*.12;mn-=pad;mx+=pad;
+  const dx=k=>Math.round((dateOf(k)-dateOf(from))/864e5);
+  const X=k=>pl+dx(k)/29*(W-pl-pr),Y=v=>pt+(1-(v-mn)/(mx-mn))*(H-pt-pb);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Вес тела за 30 дней">`;
+  for(let i=0;i<3;i++){const v=mn+(mx-mn)*i/2,y=Y(v);s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${pl-6}" y="${(y+4).toFixed(1)}" text-anchor="end">${fmt1(v)}</text>`;}
+  pts.forEach(p=>s+=`<circle class="raw" cx="${X(p.k).toFixed(1)}" cy="${Y(p.w).toFixed(1)}" r="3.5"/>`);
+  if(pts.length>1)s+=`<polyline class="ln-trend" points="${pts.map(p=>X(p.k).toFixed(1)+','+Y(p.t).toFixed(1)).join(' ')}"/>`;
+  const e=pts[pts.length-1];s+=`<circle cx="${X(e.k).toFixed(1)}" cy="${Y(e.t).toFixed(1)}" r="5" style="fill:var(--ink)"/>`;
+  s+=`<text x="${pl}" y="${H-8}">${dlShort(from)}</text><text x="${W-pr}" y="${H-8}" text-anchor="end">${dlShort(TODAY)}</text>`;
+  el.innerHTML=s+'</svg>';
+}
+$('wlist').addEventListener('click',e=>{const k=e.target.closest('[data-del-weight]')?.dataset.delWeight;if(!k)return;
+  confirmAsk('Удалить вес?','Запись '+fmt1(days[k].weight)+' кг за '+dlShort(k)+' удалится.','Удалить',()=>{mutateDay(k,d=>delete d.weight);fillProfile();toast('Вес удалён');});});
+$('bwSave').onclick=()=>{const v=numIn($('bw').value);const err=$('bwErr');
+  if(!(v>=25&&v<=300)){err.textContent='Впиши вес в килограммах, например 72,5.';err.hidden=false;return;}
+  err.hidden=true;mutateDay(cur,d=>d.weight=r1(v));fillProfile();toast('Вес записан: '+fmt1(v)+' кг');};
+$('bw').addEventListener('input',()=>$('bwErr').hidden=true);
+function renderProgress(){
+  renderWeight();
+  const keys=[];for(let i=13;i>=0;i--)keys.push(addDays(TODAY,-i));
+  const labels=keys.map(k=>dateOf(k).getDate());
+  const sum=(k,f)=>(days[k]?.meals||[]).reduce((a,m)=>a+m[f],0);
+  $('kcalChart').innerHTML=barChart(keys.map(k=>sum(k,'kcal')),labels,settings.kcal,'b-kcal','ккал');
+  $('protChart').innerHTML=barChart(keys.map(k=>sum(k,'p')),labels,settings.p,'b-prot','г');
+  const names=new Set();Object.values(days).forEach(d=>(d.sets||[]).forEach(s=>names.add(s.ex)));
+  const list=[...names].sort((a,b)=>a.localeCompare(b,'ru'));const sel=$('progEx'),prev=sel.value;
+  sel.innerHTML=list.length?list.map(n=>`<option>${esc(n)}</option>`).join(''):'<option value="">Пока нет записей</option>';
+  if(list.includes(prev))sel.value=prev;
+  renderExChart();
+  const ws=addDays(weekStart(TODAY),-28);let c='<div class="week">'+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(n=>`<div>${n}</div>`).join('');
+  for(let i=0;i<35;i++){const k=addDays(ws,i);c+=`<div class="d${trained(k)?' on':''}${k===TODAY?' today':''}${k>TODAY?' future':''}">${dateOf(k).getDate()}</div>`;}
+  $('cal').innerHTML=c+'</div>';
+}
+function renderExChart(){
+  const name=$('progEx').value;const el=$('exChart');
+  if(!name){el.innerHTML='<div class="empty">Запиши подходы во вкладке «Зал», и здесь появится график роста силы.</div>';return;}
+  const hist=exHistory(name);const bwOnly=hist.every(x=>x.sets.every(s=>s.w===0));
+  const pts=hist.map(x=>({k:x.k,v:bwOnly?Math.max(...x.sets.map(s=>s.r)):Math.max(...x.sets.map(s=>e1rm(s.w,s.r,s.rir)))}));
+  const W=520,H=200,pl=40,pr=20,pt=24,pb=28;
+  let mn=Math.min(...pts.map(p=>p.v)),mx=Math.max(...pts.map(p=>p.v));if(mx-mn<5){mn-=5;mx+=5;}const pad=(mx-mn)*.15;mn=Math.max(0,mn-pad);mx+=pad;
+  const X=i=>pts.length===1?(pl+W-pr)/2:pl+i*(W-pl-pr)/(pts.length-1),Y=v=>pt+(1-(v-mn)/(mx-mn))*(H-pt-pb);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Расчётный максимум в упражнении ${esc(name)}">`;
+  for(let i=0;i<3;i++){const v=mn+(mx-mn)*i/2,y=Y(v);s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${pl-6}" y="${(y+4).toFixed(1)}" text-anchor="end">${fmt(v)}</text>`;}
+  if(pts.length>1){const line=pts.map((p,i)=>`${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+    s+=`<polygon class="area" points="${X(0).toFixed(1)},${H-pb} ${line} ${X(pts.length-1).toFixed(1)},${H-pb}"/><polyline class="ln" points="${line}"/>`;}
+  pts.forEach((p,i)=>{const end=i===pts.length-1;s+=`<circle class="pt${end?' end':''}" cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${end?5.5:3.5}"/>`;
+    if(end)s+=`<text class="val" x="${X(i).toFixed(1)}" y="${(Y(p.v)-11).toFixed(1)}" text-anchor="${pts.length>1?'end':'middle'}">${bwOnly?fmt(p.v)+' повт.':fmt1(p.v)+' кг'}</text>`;});
+  s+=`<text x="${X(0).toFixed(1)}" y="${H-8}" text-anchor="${pts.length>1?'start':'middle'}">${dlShort(pts[0].k)}</text>`;
+  if(pts.length>1)s+=`<text x="${X(pts.length-1).toFixed(1)}" y="${H-8}" text-anchor="end">${dlShort(pts[pts.length-1].k)}</text>`;
+  el.innerHTML=s+'</svg>';
+}
+$('progEx').addEventListener('change',renderExChart);
+
+/* ---------- goals ---------- */
+const GMAP={gK:'kcal',gP:'p',gC:'c',gF:'f',gT:'train',gW:'water',gRC:'restC',gRI:'restI'};
+function fillGoals(){Object.entries(GMAP).forEach(([id,k])=>{if(document.activeElement!==$(id))$(id).value=settings[k];});renderProtCalc();fillProfile();}
+function renderProtCalc(){
+  const bw=latestWeight(TODAY);
+  if(!bw){$('protCalc').innerHTML='<span class="muted">Запиши вес тела во вкладке «Прогресс», и здесь появится расчёт белка под твой вес.</span>';return;}
+  $('protCalc').innerHTML=`<span><b>Белок под вес ${fmt1(bw)} кг</b></span><span class="muted">Сейчас цель ${fmt(settings.p)} г — это ${fmt1(settings.p/bw)} г/кг. Нажми, чтобы поставить:</span>
+    <div class="chips" style="margin-top:4px">${[1.6,1.9,2.2].map(k=>`<button type="button" class="chip" data-pk="${k}">${fmt1(k)} г/кг · ${fmt(bw*k)} г</button>`).join('')}</div>`;
+}
+$('protCalc').addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(!b)return;const bw=latestWeight(TODAY);if(!bw)return;
+  $('gP').value=Math.round(bw*+b.dataset.pk);saveGoals();});
+let gTimer;
+$('goalsForm').addEventListener('input',e=>{if(e.target.matches('input')){clearTimeout(gTimer);gTimer=setTimeout(saveGoals,600);}});
+$('goalsForm').addEventListener('submit',e=>{e.preventDefault();saveGoals();});
+function saveGoals(){
+  const ns={...settings};let changed=false;
+  Object.entries(GMAP).forEach(([id,k])=>{let v=Math.round(numIn($(id).value));if(!(v>0))return;
+    if(k==='train')v=Math.min(7,v);if(k==='restC'||k==='restI')v=Math.min(600,Math.max(15,v));
+    if(v!==ns[k]){ns[k]=v;changed=true;}});
+  if(!changed)return;settings=ns;saveSettings();render();exChange(false);
+  $('goalsSaved').hidden=false;setTimeout(()=>$('goalsSaved').hidden=true,1800);
+}
+
+/* ---------- profile & plan ---------- */
+const GOALS={cut:['Рельеф и сушка','Убрать жир и сохранить мышцы. Вес снижается.'],recomp:['Рельеф без похудения','Вес почти не меняется: жира меньше, мышц больше.'],bulk:['Набор массы','Больше мышц, жира прибавится немного.'],keep:['Сила и форма','Держать вес и расти в силе.']};
+const PACE={cut:{slow:[.5,'Медленно'],normal:[.75,'Средне'],fast:[1,'Быстро']},
+  bulk:{slow:[.25,'Медленно'],normal:[.35,'Средне'],fast:[.5,'Быстро']},
+  bulkAdv:{slow:[.1,'Медленно'],normal:[.15,'Средне'],fast:[.25,'Быстро']}};
+const EXP={new:'До года',mid:'1–3 года',adv:'Больше 3 лет'};
+const FOCUS=['Грудь','Руки','Пресс','Плечи','Спина','Ноги'];
+const FTIPS={
+ 'Грудь':'Жим на наклонной скамье сильнее нагружает верх груди, который делает грудь объёмной в майке.',
+ 'Руки':'Жимы и тяги уже нагружают руки косвенно. Добавь прямые подходы на бицепс и трицепс, трицепс — около двух третей объёма руки.',
+ 'Пресс':'Пресс качается как любая мышца, 2–3 раза в неделю с весом. Но виден он только при низком проценте жира: упражнения на пресс жир на животе локально не сжигают.',
+ 'Плечи':'Ширину плеч дают средние дельты: махи в стороны, много подходов по 12–20 повторов.',
+ 'Спина':'Для ширины — подтягивания и тяга верхнего блока, для толщины — тяги в наклоне и горизонтального блока.',
+ 'Ноги':'Приседания и жим ногами для квадрицепсов, румынская тяга и ягодичный мост для задней поверхности.'
+};
+let prof={focus:[]};
+function profFromSettings(){prof=clone(settings.profile||{});if(!prof.focus)prof.focus=[];if(!prof.days)prof.days=settings.train||3;if(!prof.act)prof.act=1.375;if(!prof.pace)prof.pace='normal';if(!prof.exp)prof.exp='new';if(!prof.place)prof.place='gym';if(!prof.equip)prof.equip=[];}
+function fillProfile(){
+  profFromSettings();
+  const setv=(id,v)=>{if(document.activeElement!==$(id))$(id).value=v??'';};
+  setv('pAge',prof.age);setv('pH',prof.height);setv('pW',prof.weight||latestWeight(TODAY)||'');setv('pWaist',prof.waist);setv('pNeck',prof.neck);setv('pHip',prof.hip);
+  $('pAct').value=String(prof.act);
+  renderProfChips();renderPlan();
+}
+function paceSet(){return prof.goal==='bulk'?(prof.exp==='adv'?PACE.bulkAdv:PACE.bulk):PACE[prof.goal];}
+function renderProfChips(){
+  document.querySelectorAll('[data-sex]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sex===prof.sex));
+  $('pHipF').hidden=prof.sex!=='f';
+  $('pDays').innerHTML=[2,3,4,5,6].map(n=>`<button type="button" class="chip" data-days="${n}" aria-pressed="${prof.days===n}">${n}</button>`).join('');
+  $('pPlace').innerHTML=Object.entries(PLACES).map(([k,l])=>`<button type="button" class="chip" data-place="${k}" aria-pressed="${prof.place===k}">${l}</button>`).join('');
+  $('pEquipF').hidden=prof.place!=='home';
+  $('pEquip').innerHTML=Object.entries(EQUIP).map(([k,l])=>`<button type="button" class="chip" data-equip="${k}" aria-pressed="${prof.equip.includes(k)}">${l}</button>`).join('');
+  $('pExp').innerHTML=Object.entries(EXP).map(([k,l])=>`<button type="button" class="chip" data-exp="${k}" aria-pressed="${prof.exp===k}">${l}</button>`).join('');
+  $('pGoal').innerHTML=Object.entries(GOALS).map(([k,[t,d]])=>`<button type="button" class="opt" data-goal="${k}" aria-pressed="${prof.goal===k}"><b>${t}</b><span>${d}</span></button>`).join('');
+  const pc=paceSet();$('pPaceF').hidden=!pc;
+  $('pPace').innerHTML=pc?Object.entries(pc).map(([k,[v,l]])=>`<button type="button" class="chip" data-pace="${k}" aria-pressed="${prof.pace===k}">${l} · ${fmt1(v)}% веса в неделю</button>`).join(''):'';
+  $('pFocus').innerHTML=FOCUS.map(g=>`<button type="button" class="chip" data-focus="${g}" aria-pressed="${prof.focus.includes(g)}">${g}</button>`).join('');
+}
+let pTimer;
+function profChanged(){
+  const num=id=>{const v=numIn($(id).value);return v>0?v:null;};
+  prof.age=num('pAge');prof.height=num('pH');prof.weight=num('pW');prof.waist=num('pWaist');prof.neck=num('pNeck');prof.hip=num('pHip');prof.act=+$('pAct').value;
+  renderProfChips();renderPlan();
+  clearTimeout(pTimer);pTimer=setTimeout(saveProfile,700);
+}
+function saveProfile(){
+  settings={...settings,profile:clone(prof)};saveSettings();
+  const w=prof.weight;if(w>=35&&w<=250&&w!==latestWeight(TODAY))mutateDay(TODAY,d=>d.weight=r1(w));else render();
+  renderGroups();exChange(false);
+}
+['pAge','pH','pW','pWaist','pNeck','pHip'].forEach(id=>$(id).addEventListener('input',profChanged));
+$('pAct').addEventListener('change',profChanged);
+$('profForm').addEventListener('submit',e=>e.preventDefault());
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-sex],[data-days],[data-exp],[data-goal],[data-pace],[data-focus],[data-obs],[data-place],[data-equip]');if(!b||!b.closest('#tab-goals'))return;
+  const ds=b.dataset;
+  if(ds.sex)prof.sex=ds.sex;
+  else if(ds.days)prof.days=+ds.days;
+  else if(ds.exp)prof.exp=ds.exp;
+  else if(ds.goal)prof.goal=ds.goal;
+  else if(ds.pace)prof.pace=ds.pace;
+  else if(ds.focus){const g=ds.focus;prof.focus=prof.focus.includes(g)?prof.focus.filter(x=>x!==g):[...prof.focus,g];}
+  else if(ds.obs!==undefined)prof.useObs=!prof.useObs;
+  else if(ds.place)prof.place=ds.place;
+  else if(ds.equip){const k=ds.equip;prof.equip=prof.equip.includes(k)?prof.equip.filter(x=>x!==k):[...prof.equip,k];}
+  profChanged();
+});
+function navyBF(sex,h,waist,neck,hip){
+  try{let v;
+    if(sex==='m'){if(!(waist>neck))return null;v=495/(1.0324-0.19077*Math.log10(waist-neck)+0.15456*Math.log10(h))-450;}
+    else{if(!hip||!(waist+hip>neck))return null;v=495/(1.29579-0.35004*Math.log10(waist+hip-neck)+0.22100*Math.log10(h))-450;}
+    return v>2&&v<60?v:null;}catch(e){return null;}
+}
+/* Actual expenditure from logs: average intake minus energy of the weight slope (linear fit) over the last 4 weeks */
+function observedTDEE(){
+  const end=addDays(TODAY,-1),start=addDays(TODAY,-28);
+  const logged=[];for(let i=0;i<28;i++){const k=addDays(start,i);const kc=(days[k]?.meals||[]).reduce((a,m)=>a+m.kcal,0);if(kc>=500)logged.push(kc);}
+  if(logged.length<14)return {need:'дней с едой '+logged.length+' из 14'};
+  const ser=weightSeries().filter(p=>p.k>=start&&p.k<=end);
+  if(ser.length<5)return {need:'взвешиваний '+ser.length+' из 5'};
+  const span=Math.round((dateOf(ser[ser.length-1].k)-dateOf(ser[0].k))/864e5);
+  if(span<10)return {need:'взвешивания должны охватывать хотя бы 10 дней'};
+  const avg=logged.reduce((a,b)=>a+b,0)/logged.length;
+  const xs=ser.map(p=>(dateOf(p.k)-dateOf(start))/864e5),ys=ser.map(p=>p.w),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)*(x-mx);});
+  const slope=den?num/den:0;
+  return {tdee:Math.round(avg-slope*7700),avg:Math.round(avg),days:logged.length,perWeek:slope*7};
+}
+function sleepAvg(){const v=[];for(let i=0;i<7;i++){const s=days[addDays(TODAY,-i)]?.sleep;if(s!=null)v.push(s);}return v.length>=3?v.reduce((a,b)=>a+b,0)/v.length:null;}
+function computePlan(pr){
+  const w=pr.weight||latestWeight(TODAY);const miss=[];
+  if(!pr.sex)miss.push('пол');if(!(pr.age>=14&&pr.age<=90))miss.push('возраст');if(!(pr.height>=120&&pr.height<=230))miss.push('рост');if(!(w>=35&&w<=250))miss.push('вес');if(!pr.goal)miss.push('результат');
+  if(miss.length)return {miss};
+  if(pr.age<18)return {teen:true};
+  const m=pr.sex==='m',bmr=10*w+6.25*pr.height-5*pr.age+(m?5:-161);
+  const formula=bmr*(pr.act||1.375)+(pr.days||3)*250/7;
+  const obs=observedTDEE();const useObs=!!(pr.useObs&&obs.tdee);
+  const tdee=useObs?obs.tdee:formula;
+  let delta=0;const pc=(pr.goal==='bulk'?(pr.exp==='adv'?PACE.bulkAdv:PACE.bulk):PACE[pr.goal]);const pv=pc?pc[pr.pace||'normal'][0]:0;
+  if(pr.goal==='cut')delta=-w*pv/100*7700/7;
+  else if(pr.goal==='bulk')delta=w*pv/100*7700/7;
+  else if(pr.goal==='recomp')delta=-0.07*tdee;
+  let capped=false;if(delta<-0.25*tdee){delta=-0.25*tdee;capped=true;}
+  let kcal=Math.round((tdee+delta)/10)*10;const floor=m?1500:1200;let floored=false;
+  if(kcal<floor){kcal=floor;floored=true;}
+  const bf=navyBF(pr.sex,pr.height,pr.waist,pr.neck,pr.hip);
+  const lbm=bf!==null?w*(1-bf/100):null;
+  let p,pNote;
+  if((pr.goal==='cut'||pr.goal==='recomp')&&lbm){p=Math.round(2.7*lbm);pNote=`2,7 г на кг сухой массы (${fmt1(lbm)} кг)`;}
+  else if(pr.goal==='cut'||pr.goal==='recomp'){p=Math.round(2.2*w);pNote='2,2 г/кг веса';}
+  else{p=Math.round(1.8*w);pNote='1,8 г/кг веса';}
+  const f=Math.round(Math.max(0.5*w,0.25*kcal/9));
+  const c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
+  const wk=(kcal-tdee)*7/7700;
+  const tbf=m?11:19;let eta=null;
+  if(bf!==null&&bf>tbf+0.5&&(pr.goal==='cut'||pr.goal==='recomp')){
+    const tw=lbm/(1-tbf/100),lose=w-tw,rate=Math.max(0.12,-wk);
+    eta={tw,lose,weeks:Math.ceil(lose/rate)};
+  }
+  return {w,bmr,tdee,formula,obs,useObs,kcal,p,pNote,f,c,wk,floored,capped,bf,tbf,eta,lowCarb:pr.goal==='bulk'&&c<3*w};
+}
+function splitFor(n){return {2:'Всё тело, тренировки А и Б по очереди',3:'Всё тело ×3 или Верх / Низ / Верх',4:'Верх / Низ / Верх / Низ',5:'Верх / Низ / Толкай / Тяни / Ноги',6:'Толкай / Тяни / Ноги ×2'}[n];}
+function renderPlan(){
+  const el=$('planCard');const r=computePlan(prof);
+  if(r.miss){el.innerHTML=`<h2>Твой план</h2><div class="empty">Чтобы посчитать план, укажи: ${r.miss.join(', ')}.</div>`;return;}
+  if(r.teen){el.innerHTML=`<h2>Твой план</h2><div class="empty">Формулы здесь рассчитаны на взрослых. До 18 лет калории и сушку лучше подбирать вместе с врачом или тренером, а в зале можно спокойно растить силу и технику.</div>`;return;}
+  const isFocusP=g=>prof.focus.includes(g);
+  const wkTxt=Math.abs(r.wk)<0.05?'вес примерно на месте':(r.wk>0?'+':'−')+fmt1(Math.abs(r.wk))+' кг в неделю';
+  let bfHtml='';
+  if(r.bf!==null){
+    const pos=v=>Math.min(100,Math.max(0,(v-5)/(35-5)*100));
+    bfHtml=`<div><h3>Процент жира</h3><div class="bfbar"><span class="m" style="left:${pos(r.bf)}%"><span>сейчас ≈${fmt1(r.bf)}%</span></span><span class="m t" style="left:${pos(r.tbf)}%"><span>пресс виден ≈${r.tbf}%</span></span></div>
+      <p class="small muted" style="margin:0">Оценка по формуле ВМС США из замеров, погрешность около 3–4%. Порог видимого пресса примерный и у всех разный.</p></div>`;
+    if(r.eta)bfHtml+=`<div class="hint"><b>Примерно ${r.eta.weeks} ${plural(r.eta.weeks,['неделя','недели','недель'])} до заметного рельефа</b><span class="muted">Нужно убрать около ${fmt1(r.eta.lose)} кг жира, вес будет около ${fmt1(r.eta.tw)} кг, если мышцы сохранятся. ${prof.goal==='recomp'?'При рекомпозиции срок дольше, зато вес почти не падает.':''}</span></div>`;
+    else if(r.bf<=r.tbf+0.5)bfHtml+=`<div class="hint"><span>Жира уже немного. Рельеф теперь в основном зависит от размера мышц, так что подойдут «Набор массы» или «Сила и форма».</span></div>`;
+  } else bfHtml=`<p class="small muted" style="margin:0">Добавь замеры талии и шеи${prof.sex==='f'?' и бёдер':''}, и я оценю процент жира, срок до рельефа и белок по сухой массе.</p>`;
+  const o=r.obs;
+  const obsHtml=o.tdee?`<div class="hint"><b>По твоим записям расход ≈ ${fmt(o.tdee)} ккал</b><span class="muted">Формула даёт ${fmt(r.formula)}. Ты ел в среднем ${fmt(o.avg)} ккал за ${o.days} ${plural(o.days,['день','дня','дней'])}, тренд веса ${o.perWeek>0?'+':''}${fmt1(o.perWeek)} кг в неделю. Если записи полные, эта цифра точнее формулы.</span>
+      <label class="check" style="margin-top:4px"><input type="checkbox" data-obs ${r.useObs?'checked':''}> Считать план от фактического расхода</label></div>`
+    :`<p class="small muted" style="margin:0">Через 2–4 недели записей еды и веса я посчитаю твой реальный расход и смогу уточнить план (сейчас не хватает: ${o.need}).</p>`;
+  const sa=sleepAvg();
+  const sleepTip=sa!==null&&sa<7&&(prof.goal==='cut'||prof.goal==='recomp')?`<li><b>Сон.</b> В среднем ${fmt1(sa)} ч. В исследовании на диете при 5,5 ч сна доля жира в потерянном весе была на 55% меньше, чем при 8,5 ч. Добавь сна — это прямо влияет на рельеф.</li>`:'';
+  const gtip={cut:'Тренируйся так же тяжело, как раньше: тяжёлые подходы сигналят телу сохранить мышцы при дефиците.',
+    recomp:'Рекомпозиция работает и у тренированных, но медленно. Главное — прогрессия весов и белок. Следи за силой и талией, а не за весами.',
+    bulk:'Если вес растёт быстрее плана, срежь 100–150 ккал: лишний темп — это в основном жир.',
+    keep:'Держи калории около расхода и прибавляй вес на снарядах по двойной прогрессии.'}[prof.goal];
+  el.innerHTML=`<div class="row"><h2>Твой план</h2><span class="tag ok">${GOALS[prof.goal][0]}</span></div>
+    <div class="kpi"><div><div class="k">${fmt(r.kcal)}</div><div class="l">ккал</div></div><div><div class="k" style="color:var(--red)">${r.p}</div><div class="l">белок, г</div></div><div><div class="k" style="color:var(--blue)">${r.c}</div><div class="l">углев., г</div></div><div><div class="k" style="color:var(--yellow)">${r.f}</div><div class="l">жиры, г</div></div></div>
+    <p class="small muted" style="margin:0">Расход около ${fmt(r.tdee)} ккал в день${r.useObs?' по твоим записям':' (формула Миффлина — Сан Жеора плюс тренировки)'}. Ожидание: ${wkTxt}. Белок: ${r.pNote}. Жиры не меньше 25% калорий.${r.capped?' Дефицит ограничен 25% расхода, чтобы не терять мышцы и силы.':''}${r.floored?' Калории подняты до безопасного минимума.':''}${r.lowCarb?' Углеводов меньше 3 г/кг — для набора лучше чуть поднять калории.':''}</p>
+    ${obsHtml}
+    ${bfHtml}
+    <div class="field"><span class="lbl">Подходов в неделю на мышцу</span><div class="chips">${Object.keys(EX).map(gr=>`<span class="tag ${isFocusP(gr)?'ok':''}">${gr} ${isFocusP(gr)?'14–20':'10–12'}</span>`).join('')}</div></div>
+    <div class="field"><span class="lbl">Как разбить ${prof.days} ${plural(prof.days,['тренировку','тренировки','тренировок'])}</span><span>${splitFor(prof.days)}</span><span class="small muted">При равном недельном объёме частота почти не влияет на рост — так просто удобнее набрать нужные подходы.</span></div>
+    <ul class="tips"><li>${gtip}</li>${sleepTip}${prof.focus.map(f=>`<li><b>${f}.</b> ${FTIPS[f]}</li>`).join('')}</ul>
+    <button class="btn" type="button" id="applyPlan">Применить план к целям</button>
+    <p class="small muted" style="margin:0">Через 2–3 недели сравни тренд веса с планом. Если отличается, поправь калории на 100–200.</p>`;
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#applyPlan'))return;
+  const r=computePlan(prof);if(!r.kcal)return;
+  settings={...settings,kcal:r.kcal,p:r.p,c:r.c,f:r.f,train:prof.days,profile:clone(prof)};
+  saveSettings();fillGoals();render();toast('План применён: '+fmt(r.kcal)+' ккал, белок '+r.p+' г');});
+
+/* ---------- resets ---------- */
+async function deleteEverything(){
+  const keys=Object.keys(days);
+  if(mode==='cloud'){
+    let failed=0;
+    for(const k of keys){try{await db.collection(base).doc('day-'+k).delete();}catch(e){failed++;}}
+    try{await db.collection(base).doc('settings').delete();}catch(e){failed++;}
+    days={};settings=clone(DEF);afterLoad();
+    toast(failed?'Не всё удалилось ('+failed+'). Проверь интернет и повтори.':'Все записи удалены');
+  }else{days={};settings=clone(DEF);saveLocal();afterLoad();toast('Все записи удалены');}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-reset]');if(!b)return;const what=b.dataset.reset;
+  if(what==='profile')confirmAsk('Сбросить профиль?','Пол, возраст, рост, замеры, цель и приоритетные мышцы очистятся. Записи еды, тренировок и веса останутся.','Сбросить',()=>{settings={...settings,profile:null};saveSettings();fillGoals();render();toast('Профиль сброшен');});
+  else if(what==='goals')confirmAsk('Вернуть цели по умолчанию?','Калории, БЖУ, вода, отдых и число тренировок вернутся к примерным значениям.','Вернуть',()=>{const ns={...settings};GOALKEYS.forEach(k=>ns[k]=DEF[k]);settings=ns;saveSettings();fillGoals();render();exChange(false);toast('Цели сброшены');});
+  else if(what==='foods'){if(!myFoods().length){toast('Своих продуктов пока нет');return;}
+    confirmAsk('Удалить мои продукты?','Удалится '+myFoods().length+' '+plural(myFoods().length,['продукт','продукта','продуктов'])+'. Уже записанная еда останется.','Удалить',()=>{settings={...settings,foods:[]};saveSettings();buildProducts();toast('Мои продукты удалены');});}
+  else if(what==='program'){if(!settings.program){toast('Программы пока нет');return;}confirmAsk('Удалить программу?','Составленная программа удалится. Записанные подходы останутся.','Удалить',()=>{settings={...settings,program:null};saveSettings();render();toast('Программа удалена');});}
+  else if(what==='weights'){const ks=Object.keys(days).filter(k=>days[k].weight>0);if(!ks.length){toast('Записей веса нет');return;}
+    confirmAsk('Удалить весь вес тела?','Удалится '+ks.length+' '+plural(ks.length,['запись','записи','записей'])+' веса. Это нельзя отменить.','Удалить',()=>{ks.forEach(k=>mutateDay(k,d=>delete d.weight));fillGoals();toast('Вес удалён');});}
+  else if(what==='all')confirmAsk('Удалить все записи?','Удалится вся еда, тренировки, вес, сон, цели, профиль и свои продукты. Отменить это нельзя.','Удалить всё',()=>confirmAsk('Точно удалить всё?','Это последний шаг. Дневник станет пустым.','Да, удалить всё',deleteEverything));
+});
+
+/* ---------- exercise technique: m muscles, s steps, e common mistakes ---------- */
+const TECH={
+ 'Жим штанги лёжа':{m:'Грудь, передние дельты, трицепс',s:['Ляг так, чтобы глаза были под грифом. Сведи и опусти лопатки, стопы плотно на полу.','Возьми гриф чуть шире плеч и сними со стоек на прямые руки.','Опускай гриф под контролем к нижней части груди, локти под углом 45–70° к корпусу.','Коснись груди без отбива и выжми вверх и чуть назад, к стойкам.'],e:['Отрыв таза от скамьи','Локти разведены в стороны под 90°','Отбив грифа от груди']},
+ 'Жим штанги на наклонной':{m:'Верх груди, передние дельты, трицепс',s:['Поставь наклон скамьи 30–45°, сведи лопатки.','Хват чуть шире плеч.','Опускай гриф к верху груди, под ключицы.','Выжимай вверх, не теряя сведённых лопаток.'],e:['Слишком крутой наклон — работают в основном плечи','Отрыв таза']},
+ 'Жим гантелей лёжа':{m:'Грудь, передние дельты, трицепс',s:['Сядь с гантелями на бёдрах, ляг и закинь их коленями к груди.','Выжми гантели над грудью.','Опускай их вниз и в стороны до лёгкого растяжения груди.','Выжимай вверх по небольшой дуге, не стукая гантели.'],e:['Слишком глубокое опускание с болью в плече','Бросать гантели на пол — опускай их на бёдра']},
+ 'Жим гантелей на наклонной':{m:'Верх груди, передние дельты, трицепс',s:['Наклон скамьи 30–45°, гантели у плеч.','Лопатки сведены, грудь вперёд.','Выжми гантели вверх над верхом груди.','Опускай медленно до растяжения груди.'],e:['Слишком крутой наклон','Неполная амплитуда']},
+ 'Жим в тренажёре':{m:'Грудь, передние дельты, трицепс',s:['Отрегулируй сиденье: рукояти на уровне середины груди.','Сведи лопатки, спина прижата к спинке.','Выжми рукояти, не выпрямляя локти до щелчка.','Медленно верни до растяжения груди.'],e:['Сиденье слишком высоко или низко','Отрыв спины от спинки']},
+ 'Отжимания от пола':{m:'Грудь, трицепс, передние дельты',s:['Руки чуть шире плеч, тело — прямая линия от головы до пяток.','Напряги пресс и ягодицы.','Опустись грудью почти до пола, локти под 45° к корпусу.','Выжмись вверх.'],e:['Провисшая поясница','Неполная амплитуда']},
+ 'Отжимания на брусьях':{m:'Низ груди, трицепс, передние дельты',s:['Упор на прямых руках, плечи опущены вниз.','Для акцента на грудь слегка наклони корпус вперёд.','Опустись, пока плечи не окажутся чуть ниже локтей.','Выжмись вверх без раскачки.'],e:['Слишком глубоко с болью в плечах','Плечи подняты к ушам']},
+ 'Разводка гантелей':{m:'Грудь',s:['Ляг на скамью, гантели над грудью, локти слегка согнуты.','Разводи руки по дуге в стороны до растяжения груди.','Угол в локтях не меняется.','Своди руки по той же дуге, как будто обнимаешь бочку.'],e:['Сгибание локтей — упражнение превращается в жим','Слишком большой вес и глубина']},
+ 'Кроссовер':{m:'Грудь',s:['Встань между блоками, шаг вперёд, корпус чуть наклонён.','Руки слегка согнуты в локтях.','Своди рукояти перед собой по дуге.','Медленно возвращай до растяжения.'],e:['Работа корпусом','Сгибание и разгибание локтей']},
+ 'Бабочка (пек-дек)':{m:'Грудь',s:['Сиденье так, чтобы рукояти были на уровне груди.','Спина прижата, лопатки сведены.','Своди руки перед собой и задержись на секунду.','Плавно разводи до растяжения.'],e:['Рывки','Отрыв спины от спинки']},
+ 'Подтягивания':{m:'Широчайшие, середина спины, бицепс',s:['Хват сверху чуть шире плеч, повисни на прямых руках.','Опусти лопатки вниз, как будто кладёшь их в задние карманы.','Тянись грудью к перекладине, ведя локти вниз к рёбрам.','Подбородок выше перекладины, затем медленно опустись до прямых рук.'],e:['Раскачка и рывки ногами','Неполная амплитуда внизу']},
+ 'Подтягивания обратным хватом':{m:'Широчайшие, бицепс',s:['Хват снизу на ширине плеч.','Опусти лопатки вниз.','Тяни грудь к перекладине, локти идут вниз вдоль корпуса.','Медленно опустись до прямых рук.'],e:['Раскачка','Короткая амплитуда']},
+ 'Тяга верхнего блока':{m:'Широчайшие, середина спины, бицепс',s:['Зафиксируй бёдра валиками, хват чуть шире плеч.','Слегка отклонись назад, грудь вперёд.','Тяни рукоять к верху груди, локти вниз и назад.','Плавно отпусти до полного растяжения широчайших.'],e:['Тяга за голову','Сильный отклон и работа корпусом']},
+ 'Тяга горизонтального блока':{m:'Середина спины, широчайшие, бицепс',s:['Сядь, колени слегка согнуты, спина ровная.','Тяни рукоять к животу, сводя лопатки.','Локти идут вдоль корпуса.','Возвращай вперёд, давая лопаткам разъехаться, но не сутулясь.'],e:['Раскачка корпусом','Сутулая спина']},
+ 'Тяга штанги в наклоне':{m:'Середина спины, широчайшие, задние дельты',s:['Хват сверху на ширине плеч, колени согнуты.','Наклонись вперёд на 30–45° к полу с ровной спиной.','Тяни гриф к низу живота, локти назад.','Опускай под контролем, сохраняя наклон.'],e:['Круглая спина','Выпрямление корпуса во время тяги']},
+ 'Тяга гантели одной рукой':{m:'Широчайшие, середина спины',s:['Упрись коленом и рукой в скамью, спина параллельна полу.','Гантель в свободной руке, рука прямая.','Тяни гантель к тазу, локоть вдоль корпуса.','Опусти до полного растяжения.'],e:['Скручивание корпуса','Тяга к груди вместо таза']},
+ 'Тяга Т-грифа':{m:'Середина спины, широчайшие',s:['Встань над грифом, колени согнуты, спина ровная.','Наклон корпуса около 45°.','Тяни рукоять к груди и животу, сводя лопатки.','Опускай медленно.'],e:['Круглая спина','Рывки корпусом']},
+ 'Становая тяга':{m:'Ягодицы, задняя поверхность бедра, разгибатели спины, трапеции',s:['Стопы на ширине таза, гриф над серединой стопы.','Наклонись и возьми гриф чуть шире ног, голени касаются грифа.','Выпрями спину, напряги широчайшие, грудь вперёд.','Толкай пол ногами и выпрямляйся, гриф скользит по ногам. Опускай тем же путём.'],e:['Круглая поясница','Гриф далеко от ног','Переразгибание назад в верхней точке']},
+ 'Гиперэкстензия':{m:'Разгибатели спины, ягодицы, задняя поверхность бедра',s:['Валик под верхом бёдер, тело прямое.','Опустись вниз, сгибаясь в тазобедренном суставе.','Поднимись до прямой линии тела.','Не прогибайся выше прямой.'],e:['Переразгибание поясницы вверху','Рывки']},
+ 'Пуловер на блоке':{m:'Широчайшие',s:['Встань лицом к верхнему блоку с прямой рукоятью или канатом.','Руки почти прямые, лёгкий наклон корпуса вперёд.','Опускай рукоять по дуге к бёдрам силой широчайших.','Плавно верни вверх до растяжения.'],e:['Сгибание локтей','Работа корпусом']},
+ 'Приседания со штангой':{m:'Квадрицепсы, ягодицы, приводящие',s:['Гриф на верх трапеций, стопы чуть шире плеч, носки немного наружу.','Вдохни, напряги пресс, сними гриф и отойди на 1–2 шага.','Садись, отводя таз назад и вниз, колени идут по направлению носков.','Опустись хотя бы до параллели бёдер с полом и встань, толкая пол всей стопой.'],e:['Колени заваливаются внутрь','Отрыв пяток','Круглая поясница внизу']},
+ 'Фронтальные приседания со штангой':{m:'Квадрицепсы, ягодицы, верх спины',s:['Гриф на передних дельтах, локти высоко вперёд.','Стопы на ширине плеч.','Садись вертикально вниз, сохраняя локти высоко.','Встань, не заваливая корпус вперёд.'],e:['Локти опускаются — гриф скатывается','Наклон корпуса']},
+ 'Гоблет-присед':{m:'Квадрицепсы, ягодицы',s:['Держи гантель или гирю вертикально у груди.','Стопы чуть шире плеч.','Садись глубоко, локти между коленей.','Встань, толкая пол.'],e:['Круглая спина','Колени внутрь']},
+ 'Жим ногами':{m:'Квадрицепсы, ягодицы',s:['Спина и таз прижаты к спинке, стопы на ширине плеч в середине платформы.','Сними упоры.','Опускай платформу, пока таз не начинает отрываться, обычно до 90° в коленях или ниже.','Выжми, не выпрямляя колени до щелчка.'],e:['Отрыв таза внизу','Полное выпрямление коленей с замком']},
+ 'Гакк-присед':{m:'Квадрицепсы, ягодицы',s:['Спина прижата к спинке, плечи под валиками.','Стопы в середине платформы на ширине плеч.','Опускайся глубоко под контролем.','Вставай, толкая платформу всей стопой.'],e:['Отрыв пяток','Короткая амплитуда']},
+ 'Болгарские сплит-приседания':{m:'Квадрицепсы, ягодицы',s:['Встань спиной к скамье, носок задней ноги на скамье.','Передняя нога на шаг впереди, гантели в руках.','Опускайся, пока переднее бедро не станет параллельно полу.','Вставай за счёт передней ноги.'],e:['Слишком короткий шаг','Колено передней ноги заваливается внутрь']},
+ 'Выпады с гантелями':{m:'Квадрицепсы, ягодицы',s:['Встань прямо, гантели в руках.','Сделай широкий шаг вперёд.','Опустись, пока заднее колено почти не коснётся пола.','Оттолкнись передней ногой и вернись.'],e:['Узкая постановка ног и потеря баланса','Удар коленом об пол']},
+ 'Румынская тяга':{m:'Задняя поверхность бедра, ягодицы',s:['Стоя, гриф у бёдер, колени чуть согнуты.','Отводи таз назад, гриф скользит по ногам вниз.','Опускай до сильного растяжения задней поверхности бедра, обычно до середины голени, спина ровная.','Возвращайся, подавая таз вперёд.'],e:['Круглая спина','Приседание вместо наклона']},
+ 'Ягодичный мост со штангой':{m:'Ягодицы',s:['Сядь на пол, верх спины на краю скамьи, гриф с мягкой накладкой на сгибе бёдер.','Стопы на ширине плеч, в верхней точке голени вертикальны.','Подними таз, сжимая ягодицы, до прямой линии плечи–колени.','Опусти таз под контролем.'],e:['Прогиб поясницы вверху','Толчок носками вместо пяток']},
+ 'Сгибание ног в тренажёре':{m:'Задняя поверхность бедра',s:['Валик над пятками, колени на оси тренажёра.','Таз прижат.','Сгибай ноги до упора.','Медленно разгибай.'],e:['Отрыв таза','Бросать вес вниз']},
+ 'Разгибание ног в тренажёре':{m:'Квадрицепсы',s:['Спина прижата, колени на оси тренажёра, валик над стопами.','Разгибай ноги почти до прямых.','Задержись на секунду.','Медленно опускай.'],e:['Рывки','Отрыв таза']},
+ 'Подъёмы на носки':{m:'Икры',s:['Встань носками на край платформы, пятки свисают.','Опусти пятки до сильного растяжения.','Поднимись на носки как можно выше.','Пауза 1 секунда вверху и внизу.'],e:['Пружинить в короткой амплитуде','Сгибать колени']},
+ 'Армейский жим штанги':{m:'Передние и средние дельты, трицепс',s:['Стоя, гриф на передних дельтах, хват чуть шире плеч.','Напряги ягодицы и пресс.','Выжми гриф вверх, убирая голову назад, затем под гриф.','Опусти под контролем к ключицам.'],e:['Сильный прогиб в пояснице','Жим вперёд от лица']},
+ 'Жим гантелей сидя':{m:'Передние и средние дельты, трицепс',s:['Спинка под 80–90°, гантели у плеч.','Ладони вперёд или слегка друг к другу.','Выжми вверх, не стукая гантели.','Опусти до уровня ушей или чуть ниже.'],e:['Прогиб в пояснице','Короткая амплитуда']},
+ 'Жим Арнольда':{m:'Передние и средние дельты, трицепс',s:['Сидя, гантели у груди, ладони к себе.','Начиная жать, разворачивай ладони вперёд.','Вверху ладони смотрят вперёд.','Опуская, разворачивай обратно.'],e:['Слишком быстрый темп','Прогиб в пояснице']},
+ 'Махи гантелями в стороны':{m:'Средние дельты',s:['Стоя, гантели у бёдер, локти чуть согнуты.','Поднимай руки в стороны до уровня плеч.','Веди движение локтями, кисти не выше локтей.','Медленно опускай.'],e:['Раскачка корпусом','Плечи поднимаются к ушам — работает трапеция']},
+ 'Махи в стороны на блоке':{m:'Средние дельты',s:['Встань боком к нижнему блоку, рукоять в дальней руке.','Локоть слегка согнут.','Поднимай руку в сторону до уровня плеча.','Медленно опускай, сохраняя натяжение.'],e:['Рывок корпусом','Слишком большой вес']},
+ 'Махи в наклоне':{m:'Задние дельты',s:['Наклонись почти параллельно полу, спина ровная.','Гантели под грудью, локти чуть согнуты.','Разводи руки в стороны до линии корпуса.','Медленно опускай.'],e:['Сведение лопаток вместо работы дельт','Раскачка']},
+ 'Обратная бабочка':{m:'Задние дельты',s:['Сядь лицом к спинке тренажёра.','Руки почти прямые на рукоятях перед собой.','Разводи руки назад до линии плеч.','Медленно возвращай.'],e:['Сильное сведение лопаток','Рывки']},
+ 'Тяга к лицу':{m:'Задние дельты, верх спины',s:['Канат на верхнем блоке на уровне лица.','Хват сверху, шаг назад.','Тяни канат к лицу, разводя концы и выводя локти высоко в стороны.','Задержись и медленно верни.'],e:['Тяга к груди с опущенными локтями','Отклон корпусом']},
+ 'Тяга штанги к подбородку':{m:'Средние дельты, трапеции',s:['Хват шире плеч — так меньше нагрузка на плечевой сустав.','Тяни гриф вверх вдоль тела, локти выше кистей.','Поднимай до низа груди, выше — только если нет дискомфорта в плече.','Опускай медленно.'],e:['Узкий хват и подъём через боль','Рывки корпусом']},
+ 'Шраги с гантелями':{m:'Трапеции',s:['Стоя, гантели по бокам.','Поднимай плечи прямо вверх к ушам.','Задержись на секунду.','Медленно опускай.'],e:['Вращение плечами','Сгибание локтей']},
+ 'Подъём штанги на бицепс':{m:'Бицепс',s:['Стоя, хват снизу на ширине плеч.','Локти прижаты к корпусу.','Сгибай руки, поднимая гриф к плечам.','Медленно опускай до прямых рук.'],e:['Раскачка корпусом','Локти уходят вперёд']},
+ 'Подъём гантелей на бицепс':{m:'Бицепс',s:['Стоя, гантели в опущенных руках, ладони к бёдрам.','Сгибая руку, разворачивай ладонь вверх.','Поднимай гантель к плечу, локоть на месте.','Медленно опускай.'],e:['Раскачка','Локти гуляют вперёд-назад']},
+ 'Молотки':{m:'Брахиалис, плечелучевая мышца, бицепс',s:['Гантели в руках, ладони смотрят друг на друга.','Локти прижаты.','Сгибай руки, сохраняя этот хват.','Медленно опускай.'],e:['Раскачка','Неполная амплитуда']},
+ 'Сгибания на наклонной скамье':{m:'Бицепс, акцент на длинную головку',s:['Спинка под 45–60°, руки свисают вниз.','Ладони вперёд.','Сгибай руки, не выводя локти вперёд.','Опускай до полного растяжения.'],e:['Плечи уходят вперёд','Слишком большой вес']},
+ 'Сгибания на блоке':{m:'Бицепс',s:['Встань у нижнего блока, прямая рукоять хватом снизу.','Локти прижаты к корпусу.','Сгибай руки к плечам.','Медленно опускай.'],e:['Отклон корпуса назад','Локти уходят вперёд']},
+ 'Французский жим':{m:'Трицепс',s:['Ляг на скамью, EZ-гриф или гантели над лбом на прямых руках.','Плечи неподвижны и слегка наклонены к голове.','Сгибай руки, опуская вес ко лбу или за голову.','Разгибай руки только в локтях.'],e:['Локти разъезжаются в стороны','Двигаются плечи']},
+ 'Жим штанги узким хватом':{m:'Трицепс, грудь',s:['Ляг как для жима лёжа, хват на ширине плеч.','Локти ближе к корпусу.','Опускай гриф к низу груди.','Выжимай вверх.'],e:['Слишком узкий хват и боль в запястьях','Локти в стороны']},
+ 'Разгибание рук на блоке':{m:'Трицепс',s:['Встань у верхнего блока с канатом или рукоятью.','Локти прижаты к корпусу.','Разгибай руки вниз до полного выпрямления.','Медленно возвращай до угла около 90°.'],e:['Локти гуляют вперёд-назад','Наваливание корпусом']},
+ 'Разгибание из-за головы':{m:'Трицепс, акцент на длинную головку',s:['Гантель или канат за головой, локти смотрят вверх.','Плечи неподвижны.','Разгибай руки вверх.','Опускай за голову до растяжения.'],e:['Локти разъезжаются','Прогиб в пояснице']},
+ 'Отжимания от скамьи':{m:'Трицепс',s:['Руки на краю скамьи за спиной, ноги впереди.','Опускайся, сгибая локти назад примерно до 90°.','Не поднимай плечи к ушам.','Выжимай вверх.'],e:['Слишком глубоко — нагрузка на плечи','Локти в стороны']},
+ 'Скручивания':{m:'Прямая мышца живота',s:['Ляг на спину, колени согнуты, руки у висков или на груди.','Прижми поясницу к полу.','Скручивайся, отрывая лопатки: рёбра тянутся к тазу.','Медленно опустись.'],e:['Тянуть голову руками','Подниматься всем корпусом за счёт бёдер']},
+ 'Скручивания на блоке':{m:'Прямая мышца живота',s:['Встань на колени у верхнего блока, канат у головы.','Бёдра неподвижны.','Скручивайся вниз, сближая рёбра с тазом.','Медленно вернись.'],e:['Сгибание в тазу вместо скручивания','Тяга руками']},
+ 'Подъём ног в висе':{m:'Пресс, сгибатели бедра',s:['Повисни на перекладине.','Подкрути таз назад.','Поднимай ноги или колени, подкручивая таз к груди.','Медленно опусти без раскачки.'],e:['Раскачка','Подъём ног без подкручивания таза']},
+ 'Подъём коленей на брусьях':{m:'Пресс, сгибатели бедра',s:['Упор на локти в брусьях, спина прижата.','Подтяни колени к груди, подкручивая таз.','Задержись на секунду.','Медленно опусти.'],e:['Раскачка','Махи ногами']},
+ 'Обратные скручивания':{m:'Прямая мышца живота',s:['Ляг, руки вдоль тела, ноги согнуты над тазом.','Подкручивай таз, отрывая его от пола к груди.','Сделай паузу.','Медленно опусти таз.'],e:['Махи ногами','Рывки']},
+ 'Ролик для пресса':{m:'Пресс, широчайшие',s:['Встань на колени, ролик под плечами.','Напряги пресс и ягодицы, подкрути таз.','Выкатывайся вперёд, пока держишь ровную спину.','Возвращайся силой пресса.'],e:['Прогиб поясницы','Слишком длинная амплитуда для своего уровня']},
+ 'Русские скручивания':{m:'Косые мышцы живота',s:['Сядь, корпус отклонён назад, ноги согнуты.','Держи вес у груди.','Поворачивай корпус из стороны в сторону.','Двигай плечами, а не только руками.'],e:['Круглая спина','Махи одними руками']},
+ 'Велосипед':{m:'Прямая и косые мышцы живота',s:['Ляг на спину, руки у висков, лопатки оторваны от пола.','Тяни правый локоть к левому колену, выпрямляя другую ногу.','Смени сторону.','Двигайся медленно и под контролем.'],e:['Тяга шеи руками','Высокий темп без скручивания']}
+};
+function showHow(name){
+  const t=TECH[name],meta=exMeta(name);
+  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent('техника '+name);
+  openSheet(`<div class="row"><h2>${esc(name)}</h2><button type="button" class="x" data-close aria-label="Закрыть">×</button></div>
+    ${t?`<div><span class="tag ok">${esc(t.m)}</span></div>
+    <div class="field"><span class="lbl">Как делать</span><ol class="steps">${t.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
+    <div class="field"><span class="lbl">Частые ошибки</span><ul class="steps">${t.e.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`
+    :'<p class="muted" style="margin:0">Для этого упражнения описания пока нет. Посмотри видео по ссылке ниже.</p>'}
+    <div class="hint"><span><b>${meta.comp?'Базовое':'Изолирующее'}:</b> ${meta.lo}–${meta.hi} повторов, отдых ${fmtSec(meta.rest)}.</span><span class="muted">Первые подходы делай с лёгким весом и следи за техникой. Боль в суставе — сигнал остановиться.</span></div>
+    <a href="${yt}" target="_blank" rel="noopener" class="btn ghost" style="display:grid;place-items:center;text-decoration:none">Посмотреть видео техники</a>`);
+}
+
+/* ---------- training place & equipment ---------- */
+const PLACES={gym:'Зал',home:'Дома с инвентарём',bodyweight:'Дома без инвентаря'};
+const EQUIP={db:'Гантели',kb:'Гиря',pullup:'Турник',band:'Резинки',bench:'Скамья',dip:'Брусья',barbell:'Штанга со стойками',roller:'Ролик для пресса'};
+/* requirement per exercise: alternatives split by |, all-of joined by +; none = no equipment; anything missing here is gym-only */
+const REQ={
+ 'Жим штанги лёжа':'barbell+bench','Жим штанги на наклонной':'barbell+bench','Жим гантелей лёжа':'db+bench','Жим гантелей на наклонной':'db+bench',
+ 'Отжимания от пола':'none','Отжимания на брусьях':'dip|gym','Разводка гантелей':'db',
+ 'Отжимания с ногами на возвышении':'none','Жим гантелей на полу':'db','Отжимания с резинкой':'band','Разводка с резинкой':'band',
+ 'Подтягивания':'pullup|gym','Подтягивания обратным хватом':'pullup|gym','Тяга штанги в наклоне':'barbell','Тяга гантели одной рукой':'db','Становая тяга':'barbell',
+ 'Австралийские подтягивания под столом':'none','Тяга гантелей в наклоне':'db','Тяга резинки к поясу':'band','Тяга резинки сверху':'band','Тяга с полотенцем у двери':'none','Супермен':'none',
+ 'Приседания со штангой':'barbell','Фронтальные приседания со штангой':'barbell','Гоблет-присед':'db|kb','Болгарские сплит-приседания':'none','Выпады с гантелями':'db',
+ 'Румынская тяга':'barbell','Ягодичный мост со штангой':'barbell','Подъёмы на носки':'none',
+ 'Приседания с весом тела':'none','Выпады без веса':'none','Румынская тяга с гантелями':'db|kb','Махи гирей':'kb|db','Ягодичный мост на полу':'none','Ягодичный мост на одной ноге':'none','Сгибания ног с полотенцем на полу':'none',
+ 'Армейский жим штанги':'barbell','Жим гантелей сидя':'db','Жим Арнольда':'db','Махи гантелями в стороны':'db','Махи в наклоне':'db','Тяга штанги к подбородку':'barbell','Шраги с гантелями':'db',
+ 'Пайк-отжимания':'none','Жим гантелей стоя':'db','Жим гири стоя':'kb','Махи в стороны с резинкой':'band','Тяга резинки к лицу':'band','Подъёмы рук Y-T лёжа':'none',
+ 'Подъём штанги на бицепс':'barbell','Подъём гантелей на бицепс':'db','Молотки':'db','Сгибания на наклонной скамье':'db+bench','Французский жим':'barbell|db',
+ 'Жим штанги узким хватом':'barbell+bench','Разгибание из-за головы':'db|band|gym','Отжимания от скамьи':'none',
+ 'Алмазные отжимания':'none','Сгибания с резинкой':'band','Разгибания с резинкой':'band',
+ 'Скручивания':'none','Подъём ног в висе':'pullup|gym','Подъём коленей на брусьях':'dip|gym','Обратные скручивания':'none','Ролик для пресса':'roller|gym','Русские скручивания':'none','Велосипед':'none','Подъём ног лёжа':'none'
+};
+const HOME_EX={
+ 'Грудь':['Отжимания с ногами на возвышении','Жим гантелей на полу','Отжимания с резинкой','Разводка с резинкой'],
+ 'Спина':['Австралийские подтягивания под столом','Тяга гантелей в наклоне','Тяга резинки к поясу','Тяга резинки сверху','Тяга с полотенцем у двери','Супермен'],
+ 'Ноги':['Приседания с весом тела','Выпады без веса','Румынская тяга с гантелями','Махи гирей','Ягодичный мост на полу','Ягодичный мост на одной ноге','Сгибания ног с полотенцем на полу'],
+ 'Плечи':['Пайк-отжимания','Жим гантелей стоя','Жим гири стоя','Махи в стороны с резинкой','Тяга резинки к лицу','Подъёмы рук Y-T лёжа'],
+ 'Руки':['Алмазные отжимания','Сгибания с резинкой','Разгибания с резинкой'],
+ 'Пресс':['Подъём ног лёжа']
+};
+Object.entries(HOME_EX).forEach(([g,l])=>EX[g].push(...l));
+['Отжимания с ногами на возвышении','Жим гантелей на полу','Отжимания с резинкой','Австралийские подтягивания под столом','Тяга гантелей в наклоне','Тяга резинки к поясу','Тяга резинки сверху','Тяга с полотенцем у двери',
+ 'Приседания с весом тела','Выпады без веса','Румынская тяга с гантелями','Махи гирей','Ягодичный мост на полу','Ягодичный мост на одной ноге','Пайк-отжимания','Жим гантелей стоя','Жим гири стоя','Алмазные отжимания'].forEach(n=>COMPOUND.add(n));
+Object.assign(SECONDARY,{'Отжимания с ногами на возвышении':PRESS,'Жим гантелей на полу':PRESS,'Отжимания с резинкой':PRESS,
+ 'Австралийские подтягивания под столом':PULL,'Тяга гантелей в наклоне':PULL,'Тяга резинки к поясу':PULL,'Тяга резинки сверху':PULL,'Тяга с полотенцем у двери':PULL,
+ 'Пайк-отжимания':{'Руки':.5},'Жим гантелей стоя':{'Руки':.5},'Жим гири стоя':{'Руки':.5},'Тяга резинки к лицу':{'Спина':.5},'Подъёмы рук Y-T лёжа':{'Спина':.5},'Алмазные отжимания':{'Грудь':.5}});
+const HARDER={'Отжимания от пола':'Отжимания с ногами на возвышении','Приседания с весом тела':'Болгарские сплит-приседания','Выпады без веса':'Болгарские сплит-приседания',
+ 'Ягодичный мост на полу':'Ягодичный мост на одной ноге','Австралийские подтягивания под столом':'Подтягивания','Скручивания':'Подъём ног лёжа','Подъём ног лёжа':'Подъём ног в висе',
+ 'Отжимания от скамьи':'Отжимания на брусьях','Алмазные отжимания':'Отжимания на брусьях','Обратные скручивания':'Подъём ног в висе'};
+const ALLEX=new Set(Object.values(EX).flat());
+function availFor(p){const pl=(p&&p.place)||'gym';if(pl==='gym')return null;if(pl==='bodyweight')return new Set();return new Set((p&&p.equip)||[]);}
+function canDo(name,avail){if(!avail)return true;if(!ALLEX.has(name))return true;
+  return (REQ[name]||'gym').split('|').some(alt=>alt.split('+').every(k=>k==='none'||avail.has(k)));}
+function isBW(name){const r=REQ[name];if(!r)return false;return r.split('|')[0].split('+').every(k=>['none','pullup','dip','band','roller'].includes(k));}
+Object.assign(TECH,{
+ 'Отжимания с ногами на возвышении':{m:'Верх груди, передние дельты, трицепс',s:['Поставь стопы на стул, диван или ступеньку, руки на пол чуть шире плеч.','Тело прямое от пяток до головы, пресс напряжён.','Опустись грудью почти до пола, локти под 45° к корпусу.','Выжмись вверх. Чем выше опора для ног, тем сложнее.'],e:['Провисшая поясница','Голова тянется к полу раньше груди']},
+ 'Жим гантелей на полу':{m:'Грудь, трицепс, передние дельты',s:['Ляг на пол, колени согнуты, гантели над грудью.','Опускай гантели, пока плечи мягко не коснутся пола, локти под 45°.','Пауза на полу на полсекунды.','Выжми вверх.'],e:['Удар локтями об пол','Локти разведены под 90°']},
+ 'Отжимания с резинкой':{m:'Грудь, трицепс',s:['Заведи резинку за спину на уровне лопаток, концы прижми ладонями к полу.','Прими упор лёжа, тело прямое.','Опустись грудью к полу.','Выжмись — резинка добавит сопротивление вверху.'],e:['Слишком жёсткая резинка и потеря техники','Провисание таза']},
+ 'Разводка с резинкой':{m:'Грудь',s:['Закрепи резинку за спиной на уровне груди или заведи её за спину.','Руки в стороны, локти слегка согнуты.','Своди руки перед собой по дуге.','Медленно разводи до растяжения груди.'],e:['Сгибание локтей','Рывки']},
+ 'Австралийские подтягивания под столом':{m:'Широчайшие, середина спины, бицепс',s:['Ляг под крепкий стол и возьмись за край хватом на ширине плеч.','Тело прямое, пятки на полу.','Подтянись грудью к краю стола, сводя лопатки.','Медленно опустись. Заранее проверь, что стол выдержит и не опрокинется.'],e:['Провисший таз','Ненадёжный стол']},
+ 'Тяга гантелей в наклоне':{m:'Середина спины, широчайшие',s:['Наклонись вперёд примерно на 45° с ровной спиной, колени согнуты, гантели в руках.','Тяни гантели к поясу, локти назад вдоль корпуса.','Сведи лопатки вверху.','Опускай медленно.'],e:['Круглая спина','Рывки корпусом']},
+ 'Тяга резинки к поясу':{m:'Середина спины, широчайшие, бицепс',s:['Сядь на пол, ноги прямые, резинка зацеплена за стопы.','Спина ровная.','Тяни концы к поясу, сводя лопатки.','Медленно отпусти.'],e:['Отклон корпуса назад','Сутулость']},
+ 'Тяга резинки сверху':{m:'Широчайшие',s:['Закрепи резинку сверху: на двери, турнике или крюке.','Встань на колени или сядь, руки вверх.','Тяни вниз к верху груди, локти к рёбрам.','Медленно отпусти вверх.'],e:['Ненадёжное крепление','Работа корпусом']},
+ 'Тяга с полотенцем у двери':{m:'Середина спины, бицепс',s:['Зажми крепкое полотенце в закрытой двери, которая открывается от тебя, или перекинь его через обе ручки открытой двери.','Возьмись за концы, стопы у двери, отклонись назад на прямых руках.','Подтянись к двери, сводя лопатки.','Медленно отклонись обратно. Чем больше наклон, тем сложнее.'],e:['Дверь открывается к тебе — это опасно','Провисший таз']},
+ 'Супермен':{m:'Разгибатели спины, ягодицы',s:['Ляг на живот, руки вытянуты вперёд.','Одновременно подними руки, грудь и ноги над полом.','Задержись на 2 секунды.','Медленно опусти.'],e:['Запрокидывание головы','Рывки']},
+ 'Приседания с весом тела':{m:'Квадрицепсы, ягодицы',s:['Стопы чуть шире плеч, носки немного наружу.','Руки вперёд для баланса.','Садись, отводя таз назад, колени по направлению носков.','Опустись ниже параллели и встань.'],e:['Отрыв пяток','Колени внутрь']},
+ 'Выпады без веса':{m:'Квадрицепсы, ягодицы',s:['Встань прямо, руки на поясе.','Сделай широкий шаг вперёд.','Опустись, пока заднее колено почти не коснётся пола.','Оттолкнись и вернись.'],e:['Короткий шаг','Колено заваливается внутрь']},
+ 'Румынская тяга с гантелями':{m:'Задняя поверхность бедра, ягодицы',s:['Стоя, гантели или гиря у бёдер, колени чуть согнуты.','Отводи таз назад, вес скользит вдоль ног.','Опускай до сильного растяжения задней поверхности бедра, спина ровная.','Возвращайся, подавая таз вперёд.'],e:['Круглая спина','Приседание вместо наклона']},
+ 'Махи гирей':{m:'Ягодицы, задняя поверхность бедра, спина',s:['Стопы шире плеч, гиря перед тобой на полу.','Наклонись с ровной спиной, возьми гирю и заведи её назад между ног.','Резко разогни таз — гиря летит вперёд до уровня груди за счёт ног, а не рук.','Дай ей упасть обратно между ног и сразу повтори.'],e:['Подъём руками','Приседание вместо наклона','Круглая спина']},
+ 'Ягодичный мост на полу':{m:'Ягодицы',s:['Ляг на спину, колени согнуты, стопы у таза.','Подними таз, сжимая ягодицы, до прямой линии плечи–колени.','Задержись на 2 секунды.','Опусти таз.'],e:['Прогиб поясницы','Толчок носками']},
+ 'Ягодичный мост на одной ноге':{m:'Ягодицы, задняя поверхность бедра',s:['Верх спины на краю дивана или на полу, одна нога согнута, другая поднята.','Толкай пол пяткой опорной ноги и поднимай таз.','Таз держи ровно, без перекоса.','Опусти и повтори, затем смени ногу.'],e:['Перекос таза','Прогиб поясницы']},
+ 'Сгибания ног с полотенцем на полу':{m:'Задняя поверхность бедра',s:['Ляг на спину на гладком полу, пятки на полотенце или в носках.','Подними таз в ягодичный мост.','Не опуская таз, подтяни пятки к себе.','Медленно выпрями ноги, таз держи наверху.'],e:['Таз падает','Слишком быстрое выпрямление']},
+ 'Пайк-отжимания':{m:'Передние и средние дельты, трицепс',s:['Прими упор лёжа и подними таз — тело как перевёрнутая буква V.','Руки на ширине плеч.','Сгибай руки, опуская голову к полу перед ладонями.','Выжмись вверх. Сложнее — со стопами на стуле.'],e:['Таз опускается и получается обычное отжимание','Локти в стороны']},
+ 'Жим гантелей стоя':{m:'Передние и средние дельты, трицепс',s:['Стоя, гантели у плеч, пресс и ягодицы напряжены.','Выжми гантели над головой.','Не прогибайся в пояснице.','Опусти до уровня ушей.'],e:['Прогиб в пояснице','Помощь ногами']},
+ 'Жим гири стоя':{m:'Передние и средние дельты, трицепс',s:['Гиря у плеча, локоть прижат.','Напряги ягодицы и пресс.','Выжми гирю вверх до прямой руки.','Опусти обратно к плечу, затем смени руку.'],e:['Наклон корпуса в сторону','Прогиб в пояснице']},
+ 'Махи в стороны с резинкой':{m:'Средние дельты',s:['Встань на середину резинки, концы в руках.','Локти чуть согнуты.','Поднимай руки в стороны до уровня плеч.','Медленно опускай.'],e:['Плечи поднимаются к ушам','Раскачка']},
+ 'Тяга резинки к лицу':{m:'Задние дельты, верх спины',s:['Закрепи резинку на уровне лица.','Возьмись хватом сверху и отойди назад.','Тяни к лицу, разводя руки и выводя локти высоко.','Задержись и медленно верни.'],e:['Локти опущены','Отклон корпусом']},
+ 'Подъёмы рук Y-T лёжа':{m:'Задние дельты, нижние трапеции',s:['Ляг на живот, лоб на сложенном полотенце.','Подними прямые руки буквой Y, большие пальцы вверх, задержись на секунду.','Опусти и подними руки в стороны буквой T.','Это один повтор. Двигайся медленно.'],e:['Подъём груди и прогиб в пояснице','Рывки']},
+ 'Алмазные отжимания':{m:'Трицепс, грудь',s:['Упор лёжа, ладони под грудью, большие и указательные пальцы образуют ромб.','Тело прямое.','Опустись грудью к рукам, локти вдоль корпуса.','Выжмись. Легче — с колен.'],e:['Локти в стороны','Провисание таза']},
+ 'Сгибания с резинкой':{m:'Бицепс',s:['Встань на середину резинки, концы в руках.','Локти прижаты к корпусу.','Сгибай руки к плечам.','Медленно опускай.'],e:['Раскачка','Локти уходят вперёд']},
+ 'Разгибания с резинкой':{m:'Трицепс',s:['Закрепи резинку сверху или придержи её одной рукой у плеча.','Локоть рабочей руки прижат.','Разгибай руку вниз до конца.','Медленно возвращай.'],e:['Локоть гуляет','Слишком лёгкая резинка']},
+ 'Подъём ног лёжа':{m:'Пресс, сгибатели бедра',s:['Ляг на спину, руки вдоль тела или под тазом.','Прижми поясницу к полу.','Подними прямые ноги вертикально, в конце слегка подкрути таз.','Медленно опусти, не касаясь пола.'],e:['Поясница отрывается от пола','Рывки']}
+});
+TECH['Болгарские сплит-приседания'].s[1]='Передняя нога на шаг впереди. Гантели в руках — по желанию.';
+TECH['Отжимания от скамьи'].s[0]='Руки на краю скамьи или устойчивого стула за спиной, ноги впереди.';
+
+/* ---------- training program generator ---------- */
+const PAT={
+ squat:['Приседания со штангой','Гоблет-присед','Болгарские сплит-приседания','Приседания с весом тела'],
+ legpress:['Жим ногами','Гакк-присед','Болгарские сплит-приседания','Выпады с гантелями','Выпады без веса'],
+ lunge:['Выпады с гантелями','Болгарские сплит-приседания','Выпады без веса'],
+ split:['Болгарские сплит-приседания','Выпады без веса'],
+ hinge:['Румынская тяга','Румынская тяга с гантелями','Махи гирей','Ягодичный мост на одной ноге'],
+ hipthrust:['Ягодичный мост со штангой','Ягодичный мост на одной ноге','Ягодичный мост на полу'],
+ legcurl:['Сгибание ног в тренажёре','Сгибания ног с полотенцем на полу'],
+ legext:['Разгибание ног в тренажёре','Выпады с гантелями','Выпады без веса'],
+ calf:['Подъёмы на носки'],
+ hpress:['Жим штанги лёжа','Жим гантелей лёжа','Жим гантелей на полу','Отжимания с резинкой','Отжимания от пола'],
+ hpress2:['Жим гантелей лёжа','Жим в тренажёре','Жим гантелей на полу','Отжимания от пола'],
+ inclpress:['Жим гантелей на наклонной','Жим штанги на наклонной','Отжимания с ногами на возвышении'],
+ dips:['Отжимания на брусьях','Отжимания с ногами на возвышении','Алмазные отжимания'],
+ fly:['Кроссовер','Разводка гантелей','Разводка с резинкой'],
+ vpress:['Армейский жим штанги','Жим гантелей стоя','Жим гири стоя','Пайк-отжимания'],
+ vpress2:['Жим гантелей сидя','Жим Арнольда','Жим гантелей стоя','Жим гири стоя','Пайк-отжимания'],
+ lateral:['Махи гантелями в стороны','Махи в стороны с резинкой','Подъёмы рук Y-T лёжа'],
+ lateral2:['Махи в стороны на блоке','Махи гантелями в стороны','Махи в стороны с резинкой'],
+ rear:['Тяга к лицу','Махи в наклоне','Тяга резинки к лицу','Подъёмы рук Y-T лёжа'],
+ vpull:['Подтягивания','Тяга верхнего блока','Тяга резинки сверху','Австралийские подтягивания под столом'],
+ vpull2:['Тяга верхнего блока','Подтягивания обратным хватом','Подтягивания','Тяга резинки сверху','Тяга с полотенцем у двери'],
+ hpull:['Тяга штанги в наклоне','Тяга гантели одной рукой','Тяга гантелей в наклоне','Тяга резинки к поясу','Австралийские подтягивания под столом'],
+ hpull2:['Тяга горизонтального блока','Тяга гантели одной рукой','Тяга резинки к поясу','Тяга с полотенцем у двери','Австралийские подтягивания под столом'],
+ hpull3:['Тяга Т-грифа','Тяга гантелей в наклоне','Тяга резинки к поясу','Супермен'],
+ curl:['Подъём штанги на бицепс','Подъём гантелей на бицепс','Сгибания с резинкой','Подтягивания обратным хватом'],
+ curl2:['Молотки','Сгибания на блоке','Сгибания с резинкой'],
+ tri:['Разгибание рук на блоке','Французский жим','Разгибания с резинкой','Алмазные отжимания'],
+ tri2:['Французский жим','Разгибание из-за головы','Отжимания от скамьи','Алмазные отжимания'],
+ abs:['Скручивания на блоке','Подъём ног в висе','Обратные скручивания'],
+ abs2:['Подъём ног в висе','Ролик для пресса','Подъём ног лёжа','Велосипед']
+};
+const TPL={
+ FA:{t:'Всё тело А',x:['squat','hpress','hpull','lateral','curl','abs']},
+ FB:{t:'Всё тело Б',x:['hinge','inclpress','vpull','vpress2','tri','abs2']},
+ FC:{t:'Всё тело В',x:['legpress','dips','vpull2','rear','curl2','tri2']},
+ UA:{t:'Верх А',x:['hpress','hpull','vpress2','vpull2','curl','tri']},
+ UB:{t:'Верх Б',x:['inclpress','vpull','lateral','hpull2','curl2','tri2']},
+ LA:{t:'Низ А',x:['squat','hinge','lunge','legcurl','calf','abs']},
+ LB:{t:'Низ Б',x:['legpress','hipthrust','split','legext','abs2']},
+ PU:{t:'Толкай: грудь, плечи, трицепс',x:['hpress','vpress','inclpress','lateral','tri']},
+ PL:{t:'Тяни: спина, бицепс',x:['vpull','hpull','hpull2','rear','curl','curl2']},
+ LG:{t:'Ноги и пресс',x:['squat','hinge','legpress','legcurl','calf','abs']},
+ PU2:{t:'Толкай Б',x:['hpress2','vpress2','dips','lateral2','tri2','fly']},
+ PL2:{t:'Тяни Б',x:['vpull2','hpull','hpull3','rear','curl','curl2']}
+};
+const DAYS_TPL={2:['FA','FB'],3:['FA','FB','FC'],4:['UA','LA','UB','LB'],5:['UA','LA','PU','PL','LG'],6:['PU','PL','LG','PU2','PL2','LB']};
+const VOL_BASE={'Грудь':10,'Спина':10,'Ноги':10,'Плечи':8,'Руки':8,'Пресс':6};
+const VOL_FOCUS={'Грудь':16,'Спина':16,'Ноги':16,'Плечи':14,'Руки':14,'Пресс':10};
+const groupOf=n=>Object.keys(EX).find(g=>EX[g].includes(n))||null;
+function progVolume(days){
+  const v={};Object.keys(EX).forEach(g=>v[g]=0);
+  days.forEach(d=>d.items.forEach(it=>{v[it.group]+=it.sets;const sec=SECONDARY[it.ex];if(sec)Object.entries(sec).forEach(([g,f])=>v[g]+=f*it.sets);}));
+  return v;
+}
+const daySets=d=>d.items.reduce((a,i)=>a+i.sets,0);
+function progTargets(focus){const t={};Object.keys(EX).forEach(g=>t[g]=focus.includes(g)?VOL_FOCUS[g]:VOL_BASE[g]);return t;}
+function generateProgram(p){
+  const n=Math.min(6,Math.max(2,p.days||3)),focus=p.focus||[];
+  const avail=availFor(p);
+  const days=DAYS_TPL[n].map(k=>{const used=new Set(),items=[];TPL[k].x.forEach(pt=>{const ex=PAT[pt].find(x=>!used.has(x)&&canDo(x,avail));if(ex){used.add(ex);items.push({ex,group:groupOf(ex),sets:3});}});return {t:TPL[k].t,items};});
+  const target=progTargets(focus);
+  for(let it=0;it<120;it++){
+    const v=progVolume(days);
+    const def=Object.keys(target).map(g=>[g,target[g]-v[g]]).filter(x=>x[1]>=1).sort((a,b)=>b[1]-a[1]);
+    if(!def.length)break;
+    const g=def[0][0];
+    let best=null;
+    days.forEach(d=>{if(daySets(d)>=26)return;d.items.forEach(i=>{if(i.group===g&&i.sets<5&&(!best||i.sets<best.sets||(i.sets===best.sets&&daySets(d)<daySets(best.d))))best={i,d,sets:i.sets};});});
+    if(best){best.i.sets++;continue;}
+    const used=new Set(days.flatMap(d=>d.items.map(i=>i.ex)));
+    const pool=EX[g].filter(x=>!used.has(x)&&canDo(x,avail)).sort((a,b)=>(COMPOUND.has(a)?1:0)-(COMPOUND.has(b)?1:0));
+    const room=[...days].filter(d=>daySets(d)<24).sort((a,b)=>daySets(a)-daySets(b))[0];
+    if(!pool.length||!room)break;
+    room.items.push({ex:pool[0],group:g,sets:3});
+  }
+  for(let it=0;it<60;it++){
+    const v=progVolume(days);const over=Object.keys(v).find(g=>v[g]>20.5);if(!over)break;
+    let big=null;days.forEach(d=>d.items.forEach(i=>{if(i.group===over&&i.sets>2&&(!big||i.sets>big.sets))big=i;}));
+    if(big){big.sets--;continue;}
+    let rm=null;days.forEach(d=>{if(d.items.length<=4)return;d.items.forEach((i,ix)=>{if(!rm&&i.group===over&&!COMPOUND.has(i.ex))rm={d,ix};});});
+    if(!rm)break;rm.d.items.splice(rm.ix,1);
+  }
+  days.forEach(d=>d.items.sort((a,b)=>(COMPOUND.has(b.ex)?1:0)-(COMPOUND.has(a.ex)?1:0)||(a.group==='Пресс')-(b.group==='Пресс')));
+  return {days,made:TODAY,basis:{days:n,focus:[...focus],goal:p.goal||null,exp:p.exp||'new',place:p.place||'gym',equip:[...(p.equip||[])]}};
+}
+function rirTarget(ex){const e=(settings.profile&&settings.profile.exp)||'new';const comp=exMeta(ex).comp;if(exMeta(ex).bw)return '0–2';
+  return e==='new'?'2–3':e==='mid'?'1–2':(comp?'1–2':'0–1');}
+function dayMinutes(d){return Math.round(d.items.reduce((a,i)=>a+i.sets*(exMeta(i.ex).rest+45),0)/60/5)*5;}
+let selProg=null;
+function autoProgDay(){
+  const pr=settings.program;if(!pr)return null;const n=pr.days.length;
+  const today=getDay(cur);if(today.prog!=null&&today.prog<n)return today.prog;
+  const ks=Object.keys(days).filter(k=>k<cur&&days[k].prog!=null).sort();
+  return ks.length?(days[ks[ks.length-1]].prog+1)%n:0;
+}
+function makeProgram(){
+  const base=settings.profile?clone(settings.profile):{};if(!base.days)base.days=settings.train||3;if(!base.focus)base.focus=[];
+  if(typeof prof==='object'&&prof&&prof.days)Object.assign(base,{days:prof.days,focus:prof.focus||[],goal:prof.goal,exp:prof.exp,place:prof.place||'gym',equip:prof.equip||[]});
+  settings={...settings,program:generateProgram(base),train:base.days};saveSettings();selProg=null;render();fillGoals();
+  toast('Программа на '+base.days+' '+plural(base.days,['тренировку','тренировки','тренировок'])+' в неделю готова');
+}
+function pickEx(ex,g){group=g||groupOf(ex)||group;renderGroups();if(![...$('ex').options].some(o=>o.value===ex)){$('ex').innerHTML+=`<option>${esc(ex)}</option>`;}$('ex').value=ex;exChange(true);
+  setTab('gym');setTimeout(()=>{try{$('logCard').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},30);}
+function renderProgToday(){
+  const el=$('progToday');const pr=settings.program;
+  if(!pr){el.innerHTML=`<h2>Программа тренировок</h2><p class="muted" style="margin:0">Я составлю программу под твою цель, приоритетные мышцы и число тренировок: какие упражнения, сколько подходов и повторов. Профиль и цель задаются во вкладке «Цели».</p><button type="button" class="btn" data-makeprog>Составить программу</button>`;return;}
+  if(selProg==null||selProg>=pr.days.length)selProg=autoProgDay();
+  const d=pr.days[selProg];const sets=getDay(cur).sets;
+  const doneFor=ex=>sets.filter(s=>s.ex===ex).length;
+  const totalDone=d.items.reduce((a,i)=>a+Math.min(i.sets,doneFor(i.ex)),0),total=daySets(d);
+  el.innerHTML=`<div class="row"><h2>${cur===TODAY?'Тренировка сегодня':'Тренировка за '+dlShort(cur)}</h2><span class="small muted num">${totalDone} из ${total} подходов · ≈${dayMinutes(d)} мин</span></div>
+    <div class="chips">${pr.days.map((x,i)=>`<button type="button" class="chip" data-progday="${i}" aria-pressed="${i===selProg}">${i+1}. ${esc(x.t)}</button>`).join('')}</div>
+    <div class="track"><i class="c-green" style="width:${total?totalDone/total*100:0}%"></i></div>
+    <div>${d.items.map(i=>{const done=doneFor(i.ex),meta=exMeta(i.ex),p=planFor(i.ex);
+      const st=done>=i.sets?'done':done>0?'part':'';
+      return `<div class="todorow"><span class="st ${st}" aria-hidden="true"></span>
+        <div style="min-width:0"><button type="button" class="itembtn" data-how="${esc(i.ex)}"><span class="name">${esc(i.ex)}</span></button>
+        <div class="small muted">${i.sets} × ${meta.lo}–${meta.hi}, RIR ${rirTarget(i.ex)} · ${done}/${i.sets}${p?' · цель '+fmt1(p.w)+' кг × '+p.r:''}</div></div>
+        <button type="button" class="btn ghost sm" data-logex="${esc(i.ex)}" data-loggroup="${i.group}">Записать</button></div>`;}).join('')}</div>
+    <p class="small muted" style="margin:0">Нажми на название, чтобы посмотреть технику. Цель по весу — из двойной прогрессии по прошлой тренировке.</p>`;
+}
+function renderProgCard(){
+  const el=$('progCard');const pr=settings.program;
+  if(!pr){el.innerHTML=`<h2>Программа тренировок</h2><p class="muted" style="margin:0">Выбери место, число тренировок, стаж и приоритетные мышцы выше, и я составлю программу: упражнения, подходы, повторы и RIR так, чтобы каждая мышца получала нужный объём в неделю.</p><button type="button" class="btn" data-makeprog>Составить программу</button>`;return;}
+  const v=progVolume(pr.days),t=progTargets(pr.basis.focus||[]);
+  const sk=a=>JSON.stringify([...(a||[])].sort());const bp=pr.basis.place||'gym';
+  const changed=prof&&prof.days&&(prof.days!==pr.basis.days||sk(prof.focus)!==sk(pr.basis.focus)||(prof.place||'gym')!==bp||((prof.place==='home')&&sk(prof.equip)!==sk(pr.basis.equip)));
+  const homeNote=bp==='gym'?'':`<div class="hint"><b>${PLACES[bp]}</b><span class="muted">Без тяжёлых весов нагрузка растёт за счёт повторов и более трудных вариантов. Отжимания и резинки растят мышцы и силу почти как жим и тренажёры, если подходы доводить близко к отказу — поэтому здесь RIR 0–2.${bp==='bodyweight'?' Бицепс и средние дельты без инвентаря нагрузить трудно: резинки стоят недорого и сильно расширят выбор упражнений.':''}</span></div>`;
+  el.innerHTML=`<div class="row"><h2>Программа тренировок</h2><span class="small muted">с ${dlShort(pr.made)}</span></div>
+    ${changed?`<div class="hint"><span>Ты поменял место, инвентарь, число тренировок или приоритеты. Составь программу заново, чтобы она им соответствовала.</span></div>`:''}${homeNote}
+    <div class="chips">${Object.keys(v).map(g=>`<span class="tag ${v[g]>=t[g]-0.5&&v[g]<=20.5?'ok':''}">${g} ${fmt1(v[g])}</span>`).join('')}</div>
+    <span class="small muted">Подходов в неделю на мышцу с учётом косвенных. Цель: ${Object.keys(t).map(g=>g.toLowerCase()+' '+t[g]).join(', ')}.</span>
+    ${pr.days.map((d,di)=>`<div class="progday"><div class="row"><b>${di+1}. ${esc(d.t)}</b><span class="small muted num">${daySets(d)} подходов · ≈${dayMinutes(d)} мин</span></div>
+      ${d.items.map((i,ii)=>{const m=exMeta(i.ex);return `<div class="prow"><button type="button" class="itembtn" data-how="${esc(i.ex)}"><span>${esc(i.ex)}</span><span class="small muted">${i.sets} × ${m.lo}–${m.hi} · RIR ${rirTarget(i.ex)}</span></button>
+        <button type="button" class="iconbtn" data-swap="${di}:${ii}" aria-label="Заменить ${esc(i.ex)}">⇄</button>
+        <button type="button" class="iconbtn" data-setsadj="${di}:${ii}:-1" aria-label="Меньше подходов">−</button></div>`;}).join('')}</div>`).join('')}
+    <div class="grid2"><button type="button" class="btn ghost" data-makeprog>Составить заново</button><button type="button" class="btn" data-gotogym>Открыть тренировку</button></div>
+    <p class="small muted" style="margin:0">⇄ — заменить упражнение, если нет тренажёра или неудобно; − — убрать подход. Каждые 6–8 недель можно составлять программу заново.</p>`;
+}
+function swapSheet(di,ii){
+  const pr=settings.program;const it=pr.days[di].items[ii];
+  const av=availFor(pr.basis);const alts=EX[it.group].filter(x=>x!==it.ex&&canDo(x,av));
+  openSheet(`<h2>Заменить упражнение</h2><p class="small muted" style="margin:0">Сейчас: ${esc(it.ex)}. Выбери замену на ту же группу мышц.</p>
+    <div class="field"><label for="swapSel">${esc(it.group)}</label><select id="swapSel">${alts.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div>
+    <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="field"><label for="swapSets">Подходов</label><input id="swapSets" type="number" inputmode="numeric" min="1" max="8" value="${it.sets}"></div></div>
+    <div class="grid2"><button type="button" class="btn ghost" data-close>Отмена</button><button type="button" class="btn" id="swapOk">Заменить</button></div>`);
+  $('swapOk').onclick=()=>{const ns=Math.min(8,Math.max(1,Math.round(numIn($('swapSets').value)||it.sets)));const np=clone(pr);np.days[di].items[ii]={ex:$('swapSel').value,group:it.group,sets:ns};
+    settings={...settings,program:np};saveSettings();closeSheet();render();renderProgCard();toast('Упражнение заменено');};
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest('[data-makeprog]')){
+    if(settings.program)confirmAsk('Составить программу заново?','Текущая программа заменится новой под твои параметры. Записанные подходы останутся.','Составить',makeProgram);else makeProgram();return;}
+  const how=t.closest('[data-how]');if(how){showHow(how.dataset.how);return;}
+  const lg=t.closest('[data-logex]');if(lg){pickEx(lg.dataset.logex,lg.dataset.loggroup);return;}
+  const pd=t.closest('[data-progday]');if(pd){selProg=+pd.dataset.progday;renderProgToday();return;}
+  const sw=t.closest('[data-swap]');if(sw){const [a,b]=sw.dataset.swap.split(':').map(Number);swapSheet(a,b);return;}
+  const sa=t.closest('[data-setsadj]');if(sa){const [a,b,c]=sa.dataset.setsadj.split(':').map(Number);const np=clone(settings.program);const it=np.days[a].items[b];
+    if(it.sets+c<1){np.days[a].items.splice(b,1);toast('Упражнение убрано из дня');}else it.sets+=c;settings={...settings,program:np};saveSettings();render();renderProgCard();return;}
+  if(t.closest('[data-gotogym]')){setTab('gym');window.scrollTo({top:0,behavior:'smooth'});return;}
+});
+
+/* ---------- today's checklist ---------- */
+const PROTEIN_PICKS=['Куриная грудка, готовая','Творог 5%','Скир','Яйца','Индейка, грудка готовая','Свиная вырезка, готовая','Йогурт греческий 2%','Сывороточный протеин'];
+function proteinIdeas(rem){
+  const seen=new Set(),cands=[];
+  recentFoods().forEach(m=>{if(m.base&&m.base.k>0&&m.base.p/m.base.k>=0.08&&!seen.has(m.name)){seen.add(m.name);cands.push({n:m.name,k:m.base.k,p:m.base.p,c:m.base.c,f:m.base.f,d:m.grams||150});}});
+  PROTEIN_PICKS.forEach(n=>{const p=PRODUCTS.find(x=>x.n===n);if(p&&!seen.has(n)){seen.add(n);cands.push(p);}});
+  return cands.slice(0,3).map(p=>{const cap=Math.max(p.d*1.5,p.d+50);let g=Math.round(rem/p.p*100/10)*10;g=Math.max(20,Math.min(cap,g));return {p,g,prot:p.p*g/100,kcal:p.k*g/100};});
+}
+function renderToday(){
+  const el=$('todayPlan');if(cur!==TODAY||!loaded){el.hidden=true;return;}el.hidden=false;
+  const d=getDay(TODAY);const eat=d.meals.reduce((a,m)=>({k:a.k+m.kcal,p:a.p+m.p}),{k:0,p:0});
+  const rows=[];
+  const row=(st,title,sub,act)=>rows.push(`<div class="todorow"><span class="st ${st}" aria-hidden="true"></span><div style="min-width:0"><b>${title}</b>${sub?`<div class="small muted">${sub}</div>`:''}</div>${act||'<span></span>'}</div>`);
+  row(d.weight?'done':'', d.weight?'Взвешивание: '+fmt1(d.weight)+' кг':'Взвеситься утром', d.weight?'':'После туалета, до еды. Записывается во вкладке «Прогресс».', d.weight?'':'<button type="button" class="btn ghost sm" data-goto="progress">Записать</button>');
+  const ws=weekStart(TODAY);let cnt=0;for(let i=0;i<7;i++)if(trained(addDays(ws,i)))cnt++;
+  const pr=settings.program;
+  if(trained(TODAY)){const pd=pr&&d.prog!=null&&pr.days[d.prog];row('done','Тренировка сделана'+(pd?': '+esc(pd.t):''),d.sets.length+' '+plural(d.sets.length,['подход','подхода','подходов'])+' записано','<button type="button" class="btn ghost sm" data-goto="gym">Открыть</button>');}
+  else if(cnt>=settings.train)row('done','Отдых','Недельная норма '+settings.train+' '+plural(settings.train,['тренировка','тренировки','тренировок'])+' уже выполнена. Мышцы растут во время восстановления.');
+  else if(trained(addDays(TODAY,-1))&&settings.train<=3)row('','Можно отдохнуть','Вчера была тренировка. При '+settings.train+' тренировках в неделю лучше чередовать с отдыхом. Осталось на неделе: '+(settings.train-cnt)+'.');
+  else{const nx=pr?pr.days[autoProgDay()]:null;row('',nx?'Тренировка: '+esc(nx.t):'Сегодня можно потренироваться',nx?nx.items.length+' '+plural(nx.items.length,['упражнение','упражнения','упражнений'])+', ≈'+dayMinutes(nx)+' мин. На неделе осталось '+(settings.train-cnt)+'.':'Составь программу, и я подскажу упражнения.','<button type="button" class="btn sm" data-goto="gym">Начать</button>');}
+  const remP=settings.p-eat.p,remK=settings.kcal-eat.k;
+  if(remP<=5)row('done','Белок набран: '+fmt(eat.p)+' г','');
+  else{const ideas=proteinIdeas(remP);
+    row(eat.p>0?'part':'','Белок: осталось '+fmt(remP)+' г',`Например: ${ideas.map((x,i)=>`<button type="button" class="linkbtn" data-qadd="${i}">${fmt(x.g)} г ${esc(x.p.n.toLowerCase())}</button> (+${fmt(x.prot)} г, ${fmt(x.kcal)} ккал)`).join(' · ')}. Нажми, чтобы добавить.`);}
+  row(remK<=0?'done':eat.k>0?'part':'',remK>0?'Калории: осталось '+fmt(remK):'Калории набраны'+(remK<-150?', сверх цели на '+fmt(-remK):''),remK>0&&remP>5?'Сначала закрой белок, остальное добирай любой едой.':'');
+  const w=d.water||0;row(w>=settings.water?'done':w>0?'part':'','Вода: '+w+' из '+settings.water,'',w<settings.water?'<button type="button" class="btn ghost sm" data-waterplus>+1 стакан</button>':'');
+  if(d.sleep==null)row('','Записать сон','Сколько спал прошлой ночью — карточка «Сон» ниже.');
+  else row(d.sleep>=7?'done':'part','Сон: '+fmt1(d.sleep)+' ч',d.sleep<7?'Меньше 7 часов. На сушке недосып заметно мешает терять именно жир.':'');
+  const done=rows.filter(r=>r.includes('st done')).length;
+  el.innerHTML=`<div class="row"><h2>План на сегодня</h2><span class="small muted num">${done} из ${rows.length}</span></div><div class="todo">${rows.join('')}</div>`;
+  el._ideas=remP>5?proteinIdeas(remP):[];
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const g=t.closest('[data-goto]');if(g){setTab(g.dataset.goto);window.scrollTo({top:0,behavior:'smooth'});return;}
+  const q=t.closest('[data-qadd]');if(q){const x=($('todayPlan')._ideas||[])[+q.dataset.qadd];if(!x)return;$('slot').value=slotNow();addMeal(mealFrom(x.p,x.g));return;}
+  if(t.closest('[data-waterplus]')){mutateDay(TODAY,d=>d.water=(d.water||0)+1);}
+});
+
+/* ---------- backup: export & import ---------- */
+const APP_ID='zal-i-tarelka';
+function backupJSON(){return JSON.stringify({app:APP_ID,version:1,exported:new Date().toISOString(),days,settings});}
+async function exportData(){
+  const fname='zal-i-tarelka-'+TODAY+'.json',json=backupJSON();
+  try{
+    if(window.claude&&typeof claude.use==='function'){
+      const dl=await claude.use('downloads');
+      if(dl){try{await dl.save({filename:fname,data:json});toast('Копия сохранена');}catch(e){if(e&&e.code!=='declined')toast('Не удалось сохранить файл. Попробуй ещё раз.');}return;}
+    }
+    const file=new File([json],fname,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'Копия дневника «Зал и тарелка»'});toast('Копия передана');}catch(e){if(e&&e.name!=='AbortError')toast('Не удалось поделиться файлом.');}
+      return;
+    }
+    const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Копия скачана: '+fname);
+  }catch(e){toast('Не удалось сохранить копию.');}
+}
+async function writeAllCloud(nd,ns){
+  let failed=0;
+  for(const k of Object.keys(days)){if(!nd[k]){try{await db.collection(base).doc('day-'+k).delete();}catch(e){failed++;}}}
+  for(const k of Object.keys(nd)){try{await db.collection(base).doc('day-'+k).set(nd[k]);}catch(e){failed++;}}
+  try{await db.collection(base).doc('settings').set(ns);}catch(e){failed++;}
+  return failed;
+}
+function applyImport(obj){
+  const nd={};Object.entries(obj.days||{}).forEach(([k,v])=>{if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&v&&typeof v==='object')nd[k]=v;});
+  const ns={...clone(DEF),...(obj.settings||{})};
+  confirmAsk('Загрузить копию?',`В копии ${Object.keys(nd).length} ${plural(Object.keys(nd).length,['день','дня','дней'])} с записями${obj.exported?', сохранена '+new Date(obj.exported).toLocaleDateString('ru-RU'):''}. Текущие записи здесь заменятся записями из копии.`,'Загрузить',async()=>{
+    if(mode==='cloud'){toast('Загружаю копию…');const f=await writeAllCloud(nd,ns);days=nd;settings=ns;afterLoad();toast(f?'Загружено с ошибками ('+f+'). Повтори загрузку.':'Копия загружена');}
+    else{days=nd;settings=ns;saveLocal();afterLoad();toast('Копия загружена');}
+  });
+}
+$('expBtn').onclick=exportData;
+$('impFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{let obj;try{obj=JSON.parse(rd.result);}catch(err){toast('Это не файл копии дневника.');return;}
+    if(!obj||obj.app!==APP_ID||typeof obj.days!=='object'){toast('Это не файл копии дневника «Зал и тарелка».');return;}
+    applyImport(obj);};
+  rd.onerror=()=>toast('Не удалось прочитать файл.');
+  rd.readAsText(f);
+});
+
+$('howBtn').onclick=()=>{const n=exName();if(n)showHow(n);else toast('Сначала выбери или впиши упражнение');};
+/* ---------- boot ---------- */
+function render(){renderHeader();renderToday();renderFood();renderProgToday();renderGym();renderProgress();renderProtCalc();renderPlan();renderProgCard();}
+$('slot').value=slotNow();
+setTab(tab);buildProducts();renderGroups();renderRir();exChange(false);fillGoals();render();
+
+/* ---------- app shell: install hint, offline, persistent storage ---------- */
+(function(){
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),samsung=/SamsungBrowser/.test(ua);
+  let deferred=null,hidden=false;try{hidden=localStorage.getItem('gl-install-hide')==='1';}catch(e){}
+  function show(){
+    if(standalone||hidden)return;
+    let h;
+    if(ios)h='<ol class="steps"><li>Открой эту страницу в <b>Safari</b>.</li><li>Нажми <b>«Поделиться»</b> (квадрат со стрелкой вверх) — внизу экрана или в меню <b>⋯</b>.</li><li>Выбери <b>«На экран „Домой“»</b>, проверь, что включено <b>«Открыть как веб-приложение»</b>, и нажми <b>«Добавить»</b>.</li></ol>';
+    else if(deferred)h='<p style="margin:0 0 10px">Приложение появится на главном экране и будет работать без интернета.</p><button type="button" class="btn" id="installGo">Установить</button>';
+    else if(samsung)h='<ol class="steps"><li>Нажми меню <b>☰</b> внизу справа.</li><li>Выбери <b>«Добавить страницу на»</b> → <b>«Главный экран»</b>.</li></ol>';
+    else h='<ol class="steps"><li>Нажми меню <b>⋮</b> вверху справа в Chrome.</li><li>Выбери <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</li></ol>';
+    $('installBody').innerHTML=h;$('installCard').hidden=false;
+    const g=$('installGo');if(g)g.onclick=async()=>{deferred.prompt();try{await deferred.userChoice;}catch(e){}deferred=null;$('installCard').hidden=true;};
+  }
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;show();});
+  window.addEventListener('appinstalled',()=>{$('installCard').hidden=true;toast('Приложение установлено');});
+  $('installClose').onclick=()=>{$('installCard').hidden=true;try{localStorage.setItem('gl-install-hide','1');}catch(e){}};
+  show();
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+})();
+</script>
+
+</body>
+</html>
