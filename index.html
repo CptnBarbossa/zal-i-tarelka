@@ -188,6 +188,12 @@ svg .val{fill:var(--fg);font-weight:600}
 .iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:15px;color:var(--fg)}
 .steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
 #logCard{scroll-margin-top:140px}
+.menumeal{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.menumeal .btn{justify-self:start}
+.mname{font-size:16px;line-height:1.35}
+.mitems{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:14px}
+.mitems li{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
+.mitems li .num{color:var(--fg);font-size:15px;white-space:nowrap}
 @media (prefers-reduced-motion: no-preference){.track i,.vol .fill{transition:width .35s ease}}
 @media (max-width:400px){#logCard .grid2{grid-template-columns:1fr}.stepper input{padding:0 4px}.macro{grid-template-columns:92px minmax(0,1fr) auto}.big{font-size:38px}.vol{grid-template-columns:56px minmax(0,1fr) 38px 84px;gap:8px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.opts{grid-template-columns:1fr}}
 </style>
@@ -217,6 +223,7 @@ svg .val{fill:var(--fg);font-weight:600}
         <div id="installBody" class="small"></div>
       </div>
             <div class="card" id="todayPlan" hidden></div>
+      <div class="card" id="menuCard"></div>
       <div class="card" id="foodSummary"></div>
 
       <form class="card" id="foodForm" novalidate>
@@ -402,6 +409,7 @@ svg .val{fill:var(--fg);font-weight:600}
           <div class="resetrow"><div><b>Профиль и цель</b><div class="small muted">Пол, рост, замеры, выбранный результат</div></div><button type="button" class="btn ghost sm" data-reset="profile">Сбросить</button></div>
           <div class="resetrow"><div><b>Цели по калориям и БЖУ</b><div class="small muted">Вернуть примерные значения</div></div><button type="button" class="btn ghost sm" data-reset="goals">Сбросить</button></div>
           <div class="resetrow"><div><b>Мои продукты</b><div class="small muted" id="myFoodsCount">Сохранённые свои продукты</div></div><button type="button" class="btn ghost sm" data-reset="foods">Удалить</button></div>
+          <div class="resetrow"><div><b>Настройки меню</b><div class="small muted">Исключения и число приёмов</div></div><button type="button" class="btn ghost sm" data-reset="menu">Сбросить</button></div>
           <div class="resetrow"><div><b>Программа тренировок</b><div class="small muted">Удалить составленную программу</div></div><button type="button" class="btn ghost sm" data-reset="program">Удалить</button></div>
           <div class="resetrow"><div><b>Весь вес тела</b><div class="small muted">Все записи веса, еда и тренировки останутся</div></div><button type="button" class="btn ghost sm" data-reset="weights">Удалить</button></div>
           <div class="resetrow"><div><b>Все записи</b><div class="small muted">Еда, тренировки, вес, сон, цели и профиль</div></div><button type="button" class="btn ghost sm warn" data-reset="all">Удалить всё</button></div>
@@ -475,14 +483,10 @@ const PRODUCTS=[
  {g:'Мясо и птица',n:'Свиная вырезка, готовая',k:143,p:26,c:0,f:3.5,d:150},
  {g:'Мясо и птица',n:'Свиная корейка, готовая',k:220,p:27,c:0,f:12,d:150},
  {g:'Мясо и птица',n:'Свиная шея, жареная',k:290,p:23,c:0,f:22,d:150},
- {g:'Мясо и птица',n:'Бекон, жареный',k:541,p:37,c:1.4,f:42,d:30},
  {g:'Мясо и птица',n:'Говядина, постный стейк',k:206,p:29,c:0,f:9,d:150},
  {g:'Мясо и птица',n:'Говяжий фарш 10%, готовый',k:217,p:26,c:0,f:11.7,d:150},
  {g:'Мясо и птица',n:'Говяжий фарш 20%, готовый',k:254,p:25.8,c:0,f:16.6,d:150},
  {g:'Мясо и птица',n:'Ветчина',k:145,p:20,c:1.5,f:6,d:50},
- {g:'Мясо и птица',n:'Колбаса варёная',k:257,p:12.8,c:1.5,f:22.2,d:50},
- {g:'Мясо и птица',n:'Колбаса копчёная',k:450,p:20,c:1,f:40,d:30},
- {g:'Мясо и птица',n:'Сосиски',k:270,p:11,c:2,f:24,d:100},
  {g:'Рыба и морепродукты',n:'Лосось, запечённый',k:206,p:22,c:0,f:12.4,d:150},
  {g:'Рыба и морепродукты',n:'Скумбрия, запечённая',k:262,p:24,c:0,f:17.8,d:150},
  {g:'Рыба и морепродукты',n:'Треска, готовая',k:105,p:23,c:0,f:0.9,d:150},
@@ -568,7 +572,6 @@ const PRODUCTS=[
  {g:'Орехи и семена',n:'Семечки подсолнечника',k:584,p:21,c:20,f:51,d:30},
  {g:'Масла и соусы',n:'Масло растительное',k:884,p:0,c:0,f:100,d:10},
  {g:'Масла и соусы',n:'Масло сливочное',k:717,p:0.9,c:0.1,f:81,d:10},
- {g:'Масла и соусы',n:'Майонез',k:680,p:1,c:0.6,f:75,d:15},
  {g:'Масла и соусы',n:'Кетчуп',k:101,p:1,c:27,f:0.1,d:20},
  {g:'Масла и соусы',n:'Мёд',k:304,p:0.3,c:82,f:0,d:15},
  {g:'Масла и соусы',n:'Сахар',k:387,p:0,c:100,f:0,d:5},
@@ -576,27 +579,14 @@ const PRODUCTS=[
  {g:'Сладкое и снеки',n:'Шоколад молочный',k:535,p:7.6,c:59,f:30,d:25},
  {g:'Сладкое и снеки',n:'Шоколад тёмный 70%',k:598,p:7.8,c:46,f:43,d:25},
  {g:'Сладкое и снеки',n:'Печенье овсяное',k:450,p:6.2,c:69,f:18,d:30},
- {g:'Сладкое и снеки',n:'Пончик глазированный',k:421,p:4.9,c:49,f:23,d:60},
- {g:'Сладкое и снеки',n:'Мороженое ванильное',k:207,p:3.5,c:24,f:11,d:80},
- {g:'Сладкое и снеки',n:'Сырок глазированный',k:407,p:8.5,c:32,f:27,d:45},
- {g:'Сладкое и снеки',n:'Чипсы картофельные',k:536,p:7,c:53,f:35,d:30},
  {g:'Сладкое и снеки',n:'Протеиновый батончик',k:360,p:30,c:35,f:12,d:60},
  {g:'Готовые блюда',n:'Пельмени варёные',k:248,p:11,c:25,f:12,d:250},
  {g:'Готовые блюда',n:'Плов с курицей',k:170,p:7,c:22,f:6,d:300},
  {g:'Готовые блюда',n:'Борщ',k:50,p:1.5,c:6,f:2.2,d:300},
  {g:'Готовые блюда',n:'Сырники',k:230,p:14,c:22,f:10,d:150},
- {g:'Готовые блюда',n:'Шаурма с курицей',k:210,p:12,c:18,f:10,d:300},
- {g:'Готовые блюда',n:'Бургер',k:254,p:13,c:30,f:9,d:200},
- {g:'Готовые блюда',n:'Пицца с сыром',k:266,p:11,c:33,f:10,d:200},
- {g:'Готовые блюда',n:'Картофель фри',k:312,p:3.4,c:41,f:15,d:120},
- {g:'Готовые блюда',n:'Куриные наггетсы',k:296,p:15,c:16,f:19,d:120},
  {g:'Готовые блюда',n:'Роллы «Калифорния»',k:146,p:4.5,c:23,f:4,d:200},
  {g:'Напитки',n:'Сок апельсиновый',k:45,p:0.7,c:10.4,f:0.2,d:250},
- {g:'Напитки',n:'Кола',k:42,p:0,c:10.6,f:0,d:330},
- {g:'Напитки',n:'Энергетик',k:45,p:0,c:11,f:0,d:250},
  {g:'Напитки',n:'Латте на молоке',k:45,p:2.6,c:4,f:2,d:300},
- {g:'Напитки',n:'Пиво светлое',k:43,p:0.5,c:3.6,f:0,d:500},
- {g:'Напитки',n:'Квас',k:27,p:0.2,c:5.2,f:0,d:500},
  {g:'Спортпит',n:'Сывороточный протеин',k:380,p:75,c:8,f:5,d:30},
  {g:'Спортпит',n:'Казеин',k:360,p:78,c:6,f:2,d:30},
  {g:'Спортпит',n:'Гейнер',k:380,p:20,c:70,f:3,d:100}
@@ -622,7 +612,7 @@ const SECONDARY={
 };
 const SLOTS=['Завтрак','Обед','Перекус','Ужин'];
 const GOALKEYS=['kcal','p','c','f','train','water','restC','restI'];
-const DEF={kcal:2400,p:140,c:280,f:75,train:3,water:8,restC:150,restI:90,profile:null,foods:[],program:null};
+const DEF={kcal:2400,p:140,c:280,f:75,train:3,water:8,restC:150,restI:90,profile:null,foods:[],program:null,menu:null};
 const $=id=>document.getElementById(id);
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 const fmt1=n=>(Math.round(n*10)/10).toLocaleString('ru-RU');
@@ -725,8 +715,8 @@ function setTab(t){tab=t;try{localStorage.setItem('gl-tab',t);}catch(e){}
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
   ['food','gym','progress','goals'].forEach(x=>$('tab-'+x).hidden=x!==t);}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-$('prev').onclick=()=>{cur=addDays(cur,-1);render();exChange(false);};
-$('next').onclick=()=>{if(cur<TODAY){cur=addDays(cur,1);render();exChange(false);}};
+$('prev').onclick=()=>{cur=addDays(cur,-1);menuDay=null;render();exChange(false);};
+$('next').onclick=()=>{if(cur<TODAY){cur=addDays(cur,1);menuDay=null;render();exChange(false);}};
 
 /* ---------- food ---------- */
 function allProducts(){return [...myFoods().map((f,i)=>({...f,g:'Мои продукты',key:'m:'+i,mine:i})),...PRODUCTS.map((p,i)=>({...p,key:'p:'+i}))];}
@@ -1290,6 +1280,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-reset]');i
   else if(what==='goals')confirmAsk('Вернуть цели по умолчанию?','Калории, БЖУ, вода, отдых и число тренировок вернутся к примерным значениям.','Вернуть',()=>{const ns={...settings};GOALKEYS.forEach(k=>ns[k]=DEF[k]);settings=ns;saveSettings();fillGoals();render();exChange(false);toast('Цели сброшены');});
   else if(what==='foods'){if(!myFoods().length){toast('Своих продуктов пока нет');return;}
     confirmAsk('Удалить мои продукты?','Удалится '+myFoods().length+' '+plural(myFoods().length,['продукт','продукта','продуктов'])+'. Уже записанная еда останется.','Удалить',()=>{settings={...settings,foods:[]};saveSettings();buildProducts();toast('Мои продукты удалены');});}
+  else if(what==='menu'){settings={...settings,menu:null};saveSettings();render();toast('Настройки меню сброшены');}
   else if(what==='program'){if(!settings.program){toast('Программы пока нет');return;}confirmAsk('Удалить программу?','Составленная программа удалится. Записанные подходы останутся.','Удалить',()=>{settings={...settings,program:null};saveSettings();render();toast('Программа удалена');});}
   else if(what==='weights'){const ks=Object.keys(days).filter(k=>days[k].weight>0);if(!ks.length){toast('Записей веса нет');return;}
     confirmAsk('Удалить весь вес тела?','Удалится '+ks.length+' '+plural(ks.length,['запись','записи','записей'])+' веса. Это нельзя отменить.','Удалить',()=>{ks.forEach(k=>mutateDay(k,d=>delete d.weight));fillGoals();toast('Вес удалён');});}
@@ -1614,7 +1605,7 @@ const PROTEIN_PICKS=['Куриная грудка, готовая','Творог
 function proteinIdeas(rem){
   const seen=new Set(),cands=[];
   recentFoods().forEach(m=>{if(m.base&&m.base.k>0&&m.base.p/m.base.k>=0.08&&!seen.has(m.name)){seen.add(m.name);cands.push({n:m.name,k:m.base.k,p:m.base.p,c:m.base.c,f:m.base.f,d:m.grams||150});}});
-  PROTEIN_PICKS.forEach(n=>{const p=PRODUCTS.find(x=>x.n===n);if(p&&!seen.has(n)){seen.add(n);cands.push(p);}});
+  PROTEIN_PICKS.forEach(n=>{const p=PRODUCTS.find(x=>x.n===n);if(p&&!seen.has(n)&&!prodTags(n).some(t=>mprefs().excl.includes(t))){seen.add(n);cands.push(p);}});
   return cands.slice(0,3).map(p=>{const cap=Math.max(p.d*1.5,p.d+50);let g=Math.round(rem/p.p*100/10)*10;g=Math.max(20,Math.min(cap,g));return {p,g,prot:p.p*g/100,kcal:p.k*g/100};});
 }
 function renderToday(){
@@ -1694,12 +1685,171 @@ $('impFile').addEventListener('change',e=>{
 });
 
 $('howBtn').onclick=()=>{const n=exName();if(n)showHow(n);else toast('Сначала выбери или впиши упражнение');};
+/* ---------- weekly menu: dishes from the product base, portions solved for the calorie and protein goals ---------- */
+/* item roles: p = protein source (scaled), c = carb source (scaled), x = fixed amount */
+const DISHES={
+ 'Завтрак':[
+  {n:'Овсянка на молоке с творогом и бананом',i:[['c','Овсянка сухая'],['p','Творог 5%'],['x','Молоко 2,5%',150],['x','Банан',100]]},
+  {n:'Омлет с цельнозерновым хлебом и помидором',i:[['p','Яйца'],['c','Хлеб цельнозерновой'],['x','Помидор',150]]},
+  {n:'Скир с овсяными хлопьями и черникой',i:[['p','Скир'],['c','Овсянка сухая'],['x','Черника',100]]},
+  {n:'Творог с бананом и мёдом',i:[['p','Творог 5%'],['c','Банан'],['x','Мёд',15]]},
+  {n:'Яйца с ржаным хлебом, сыром и огурцом',i:[['p','Яйца'],['c','Хлеб ржаной'],['x','Сыр твёрдый (гауда)',25],['x','Огурец',120]]},
+  {n:'Греческий йогурт с овсянкой и яблоком',i:[['p','Йогурт греческий 2%'],['c','Овсянка сухая'],['x','Яблоко',150]]},
+  {n:'Гречка с молоком и яйцами',i:[['p','Яйца'],['c','Гречка варёная'],['x','Молоко 2,5%',150]]}
+ ],
+ 'Обед':[
+  {n:'Куриная грудка с рисом и салатом',i:[['p','Куриная грудка, готовая'],['c','Рис белый варёный'],['x','Овощной салат без заправки',150],['x','Масло растительное',10]]},
+  {n:'Свиная вырезка с гречкой и огурцом',i:[['p','Свиная вырезка, готовая'],['c','Гречка варёная'],['x','Огурец',150]]},
+  {n:'Индейка с пастой и брокколи',i:[['p','Индейка, грудка готовая'],['c','Паста варёная'],['x','Брокколи варёная',150],['x','Масло растительное',5]]},
+  {n:'Паста с говяжьим фаршем и томатами',i:[['p','Говяжий фарш 10%, готовый'],['c','Паста варёная'],['x','Помидор',150]]},
+  {n:'Говядина с картофелем и салатом',i:[['p','Говядина, постный стейк'],['c','Картофель варёный'],['x','Овощной салат без заправки',150],['x','Масло растительное',10]]},
+  {n:'Куриное бедро с булгуром и перцем',i:[['p','Куриное бедро без кожи, готовое'],['c','Булгур варёный'],['x','Перец болгарский',150]]},
+  {n:'Лосось с рисом и брокколи',i:[['p','Лосось, запечённый'],['c','Рис белый варёный'],['x','Брокколи варёная',150]]},
+  {n:'Чечевица с рисом, яйцом и овощами',i:[['p','Яйца'],['c','Чечевица варёная'],['x','Рис белый варёный',100],['x','Овощной салат без заправки',150]]}
+ ],
+ 'Перекус':[
+  {n:'Творог с яблоком',i:[['p','Творог 5%'],['c','Яблоко']]},
+  {n:'Протеиновый коктейль на молоке с бананом',i:[['p','Сывороточный протеин'],['c','Банан'],['x','Молоко 2,5%',250]]},
+  {n:'Греческий йогурт с бананом и миндалём',i:[['p','Йогурт греческий 2%'],['c','Банан'],['x','Миндаль',15]]},
+  {n:'Зернёный творог с ржаными хлебцами',i:[['p','Зернёный творог'],['c','Хлебцы ржаные']]},
+  {n:'Варёные яйца с хлебом и огурцом',i:[['p','Яйца'],['c','Хлеб ржаной'],['x','Огурец',100]]},
+  {n:'Скир с клубникой',i:[['p','Скир'],['c','Клубника']]}
+ ],
+ 'Ужин':[
+  {n:'Куриная грудка с гречкой и овощами',i:[['p','Куриная грудка, готовая'],['c','Гречка варёная'],['x','Овощной салат без заправки',150],['x','Масло растительное',5]]},
+  {n:'Свиная корейка с картофельным пюре и квашеной капустой',i:[['p','Свиная корейка, готовая'],['c','Картофельное пюре с молоком и маслом'],['x','Квашеная капуста',100]]},
+  {n:'Индейка с киноа и кабачком',i:[['p','Индейка, грудка готовая'],['c','Киноа варёная'],['x','Кабачок',200],['x','Масло растительное',5]]},
+  {n:'Омлет с шампиньонами и хлебом',i:[['p','Яйца'],['c','Хлеб цельнозерновой'],['x','Шампиньоны',150],['x','Масло растительное',5]]},
+  {n:'Куриное бедро с рисом и брокколи',i:[['p','Куриное бедро без кожи, готовое'],['c','Рис белый варёный'],['x','Брокколи варёная',150]]},
+  {n:'Треска с картофелем и салатом',i:[['p','Треска, готовая'],['c','Картофель варёный'],['x','Овощной салат без заправки',150],['x','Масло растительное',10]]},
+  {n:'Говядина с булгуром и перцем',i:[['p','Говядина, постный стейк'],['c','Булгур варёный'],['x','Перец болгарский',150]]},
+  {n:'Нут с творогом 5% и овощами',i:[['p','Творог 5%'],['c','Нут варёный'],['x','Овощной салат без заправки',150]]}
+ ]
+};
+const SHARE4={'Завтрак':[.25,.25],'Обед':[.35,.30],'Перекус':[.15,.20],'Ужин':[.25,.25]};
+const SHARE3={'Завтрак':[.30,.30],'Обед':[.40,.35],'Ужин':[.30,.35]};
+const EXCL={fish:'Рыба',pork:'Свинина',meat:'Мясо и птица',dairy:'Молочное',eggs:'Яйца'};
+const PBYN={};PRODUCTS.forEach(p=>PBYN[p.n]=p);
+function prodTags(n){const p=PBYN[n];if(!p)return [];const t=[];
+  if(p.g==='Рыба и морепродукты')t.push('fish');
+  if(p.g==='Мясо и птица')t.push('meat');
+  if(/Свин|Бекон|Ветчина/.test(n))t.push('pork');
+  if(/^Яйц|Яичный|Омлет/.test(n))t.push('eggs');
+  if((p.g==='Яйца и молочное'&&!/^Яйц|Яичный/.test(n))||/Молоко|пюре с молоком|протеин|Казеин/i.test(n))t.push('dairy');
+  return t;}
+const dishOk=(d,ex)=>d.i.every(([,n])=>!prodTags(n).some(t=>ex.includes(t)));
+function mprefs(){const m=settings.menu||{};return {excl:m.excl||[],meals:m.meals===3?3:4,seed:m.seed||1};}
+function rng(seed){let a=seed>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+const unitG=n=>n==='Яйца'?55:n==='Сывороточный протеин'?15:10;
+const roundG=(n,g)=>{const u=unitG(n);return Math.max(u,Math.round(g/u)*u);};
+function gLimits(n,role){const p=PBYN[n],d=p.d||100;
+  if(n==='Яйца')return [110,165];if(n==='Сывороточный протеин')return [15,45];
+  return role==='p'?[Math.round(d*0.5),Math.round(d*2.5)]:[Math.max(20,Math.round(d*0.4)),Math.round(d*4)];}
+function mealTot(items){return items.reduce((a,it)=>{const pr=PBYN[it.n];return {k:a.k+pr.k*it.g/100,p:a.p+pr.p*it.g/100,c:a.c+pr.c*it.g/100,f:a.f+pr.f*it.g/100};},{k:0,p:0,c:0,f:0});}
+/* day-level correction: spread the remaining protein over protein items, then the remaining calories over carb items */
+function fixDay(meals,K,P){
+  for(let it=0;it<4;it++){
+    let t=meals.reduce((a,m)=>{const x=mealTot(m.items);return {k:a.k+x.k,p:a.p+x.p};},{k:0,p:0});
+    const dP=P-t.p;
+    if(Math.abs(dP)>4){const ps=meals.map(m=>m.items.find(i=>i.r==='p')).filter(i=>{const [l,h]=gLimits(i.n,'p');return dP>0?i.g<h:i.g>l;});
+      ps.forEach(i=>{const [l,h]=gLimits(i.n,'p');i.g=roundG(i.n,Math.min(h,Math.max(l,i.g+dP/ps.length/PBYN[i.n].p*100)));});}
+    t=meals.reduce((a,m)=>{const x=mealTot(m.items);return {k:a.k+x.k,p:a.p+x.p};},{k:0,p:0});
+    const dK=K-t.k;
+    if(Math.abs(dK)>30){const cs=meals.map(m=>m.items.find(i=>i.r==='c')).filter(i=>{if(!i)return false;const [l,h]=gLimits(i.n,'c');return dK>0?i.g<h:i.g>l;});
+      cs.forEach(i=>{const [l,h]=gLimits(i.n,'c');i.g=roundG(i.n,Math.min(h,Math.max(l,i.g+dK/cs.length/PBYN[i.n].k*100)));});}
+  }
+  meals.forEach(m=>Object.assign(m,mealTot(m.items)));
+}
+/* solve grams of protein item (gp) and carb item (gc), per 100 g, so the dish hits kcal K and protein P */
+function portion(dish,K,P){
+  let kF=0,pF=0;const items=[];let ip=null,ic=null;
+  dish.i.forEach(([r,n,g])=>{const pr=PBYN[n];if(r==='x'){kF+=pr.k*g/100;pF+=pr.p*g/100;items.push({n,g});}else{const it={n,g:0,r};items.push(it);if(r==='p')ip=it;else ic=it;}});
+  const pp=PBYN[ip.n],pc=ic?PBYN[ic.n]:null;
+  let gp,gc=0;const Pr=P-pF,Kr=K-kF;
+  if(pc){const det=pp.p*pc.k-pc.p*pp.k;
+    if(Math.abs(det)>1e-6){gp=(Pr*pc.k-pc.p*Kr)/det*100;gc=(pp.p*Kr-pp.k*Pr)/det*100;}
+    if(!(gp>0)||!(gc>0)){gp=Pr/pp.p*100;gc=(Kr-pp.k*gp/100)/pc.k*100;}
+  }else gp=Pr/pp.p*100;
+  const [pl,ph]=gLimits(ip.n,'p');ip.g=roundG(ip.n,Math.min(ph,Math.max(pl,gp)));
+  if(ic){const [cl,ch]=gLimits(ic.n,'c');const kLeft=Kr-pp.k*ip.g/100;ic.g=roundG(ic.n,Math.min(ch,Math.max(cl,kLeft/pc.k*100)));}
+  return {n:dish.n,items,...mealTot(items)};
+}
+function weekMenu(ws){
+  const mp=mprefs(),share=mp.meals===3?SHARE3:SHARE4,K=settings.kcal,P=settings.p;
+  const wIdx=Math.floor(dateOf(ws).getTime()/6048e5);const r=rng(mp.seed*7919+wIdx);
+  const pick={};
+  Object.keys(share).forEach(slot=>{const list=DISHES[slot].filter(d=>dishOk(d,mp.excl));
+    for(let i=list.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[list[i],list[j]]=[list[j],list[i]];}pick[slot]=list;});
+  const days=[];
+  for(let di=0;di<7;di++){const meals=[],usedP=new Set();
+    Object.entries(share).forEach(([slot,[ks,ps]])=>{const list=pick[slot];if(!list.length)return;
+      let d=list[di%list.length];for(let j=0;j<list.length;j++){const c=list[(di+j)%list.length];const pn=c.i.find(x=>x[0]==='p')[1];if(!usedP.has(pn)){d=c;break;}}
+      usedP.add(d.i.find(x=>x[0]==='p')[1]);meals.push({slot,...portion(d,K*ks,P*ps)});});
+    fixDay(meals,K,P);
+    const t=meals.reduce((a,m)=>({k:a.k+m.k,p:a.p+m.p}),{k:0,p:0});days.push({date:addDays(ws,di),meals,k:t.k,p:t.p});}
+  return days;
+}
+const gText=(n,g)=>n==='Яйца'?`${Math.round(g/55)} шт.`:`${fmt(g)} ${/Молоко|Кефир|Сок|Латте/.test(n)?'мл':'г'}`;
+let menuDay=null;
+function renderMenu(){
+  const el=$('menuCard');if(!loaded){el.innerHTML='';return;}
+  const ws=weekStart(cur),wk=weekMenu(ws);const di=menuDay!=null?menuDay:Math.round((dateOf(cur)-dateOf(ws))/864e5);
+  const day=wk[di];const mp=mprefs();const names=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const cd=getDay(cur);
+  const added=(m)=>m.items.every(it=>cd.meals.some(x=>x.name===it.n&&x.slot===m.slot));
+  el.innerHTML=`<div class="row"><h2>Меню на неделю</h2><span class="small muted num">${fmt(settings.kcal)} ккал · белок ${fmt(settings.p)} г</span></div>
+    <div class="chips">${names.map((n,i)=>`<button type="button" class="chip" data-mday="${i}" aria-pressed="${i===di}">${n} ${dateOf(addDays(ws,i)).getDate()}</button>`).join('')}</div>
+    ${!day.meals.length?'<div class="empty">С такими исключениями блюд не осталось. Убери что-нибудь в настройках меню.</div>':
+    day.meals.map((m,mi)=>`<div class="menumeal"><div class="slothead"><h3>${m.slot}</h3><span class="tag">${fmt(m.k)} ккал · Б ${fmt(m.p)}</span></div>
+      <b class="mname">${esc(m.n)}</b>
+      <ul class="mitems">${m.items.map(it=>`<li><span>${esc(it.n)}</span><span class="num">${gText(it.n,it.g)}</span></li>`).join('')}</ul>
+      ${added(m)?'<span class="small" style="color:var(--green);font-weight:700">✓ Добавлено в дневник</span>':`<button type="button" class="btn ghost sm" data-meat="${di}:${mi}">Добавить в дневник${cur===TODAY?'':' за '+dlShort(cur)}</button>`}</div>`).join('')}
+    ${(()=>{const miss=Object.keys(mp.meals===3?SHARE3:SHARE4).filter(sl=>!day.meals.some(m=>m.slot===sl));return miss.length&&day.meals.length?`<div class="hint"><span>Для приёма «${miss.join('», «')}» нет блюд без исключённых продуктов, поэтому за день выходит меньше цели.</span></div>`:'';})()}
+    <div class="hint"><span><b>Итого за день: ${fmt(day.k)} ккал, белок ${fmt(day.p)} г</b></span><span class="muted">Порции подобраны под твои цели. Можно менять блюда местами между днями — по калориям они близки.</span></div>
+    <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <button type="button" class="btn ghost sm" id="menuNew">Другие блюда</button>
+      <button type="button" class="btn ghost sm" id="menuShop">Покупки</button>
+      <button type="button" class="btn ghost sm" id="menuSet">Настроить</button></div>
+    ${mp.excl.length?`<span class="small muted">Без: ${mp.excl.map(k=>EXCL[k].toLowerCase()).join(', ')}. Приёмов: ${mp.meals}.</span>`:`<span class="small muted">Приёмов в день: ${mp.meals}. Если чего-то не ешь, отметь в «Настроить».</span>`}`;
+}
+function saveMenu(patch){settings={...settings,menu:{...mprefs(),...patch}};saveSettings();render();}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const md=t.closest('[data-mday]');if(md){menuDay=+md.dataset.mday;renderMenu();return;}
+  const ma=t.closest('[data-meat]');if(ma){const [di,mi]=ma.dataset.meat.split(':').map(Number);const m=weekMenu(weekStart(cur))[di].meals[mi];
+    mutateDay(cur,d=>m.items.forEach(it=>d.meals.push({id:uidGen(),slot:m.slot,time:nowTime(),...mealFrom(PBYN[it.n],it.g)})));toast('Добавлено: '+m.n);return;}
+  if(t.closest('#menuNew')){saveMenu({seed:(mprefs().seed%9973)+1});toast('Подобрал другие блюда');return;}
+  if(t.closest('#menuSet')){menuSettings();return;}
+  if(t.closest('#menuShop')){shopList();return;}
+  const ex=t.closest('[data-mexcl]');if(ex){const k=ex.dataset.mexcl,cur0=mprefs().excl;const nx=cur0.includes(k)?cur0.filter(x=>x!==k):[...cur0,k];saveMenu({excl:nx});menuSettings();return;}
+  const mm=t.closest('[data-mmeals]');if(mm){saveMenu({meals:+mm.dataset.mmeals});menuSettings();return;}
+  if(t.closest('#shopCopy')){const txt=$('shopText').innerText;const ok=()=>toast('Список скопирован');
+    try{navigator.clipboard.writeText(txt).then(ok).catch(()=>selText());}catch(err){selText();}return;}
+});
+function selText(){const r=document.createRange();r.selectNodeContents($('shopText'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Выделено — скопируй вручную');}
+function menuSettings(){const mp=mprefs();
+  openSheet(`<div class="row"><h2>Настройки меню</h2><button type="button" class="x" data-close aria-label="Закрыть">×</button></div>
+   <div class="field"><span class="lbl">Не ем</span><div class="chips">${Object.entries(EXCL).map(([k,l])=>`<button type="button" class="chip" data-mexcl="${k}" aria-pressed="${mp.excl.includes(k)}">${l}</button>`).join('')}</div></div>
+   <div class="field"><span class="lbl">Приёмов пищи в день</span><div class="chips">${[3,4].map(n=>`<button type="button" class="chip" data-mmeals="${n}" aria-pressed="${mp.meals===n}">${n===3?'3 — завтрак, обед, ужин':'4 — с перекусом'}</button>`).join('')}</div>
+   <span class="small muted">4 приёма помогают набрать белок: около 0,4 г на кг веса за раз.</span></div>
+   <p class="small muted" style="margin:0">Меню строится от целей во вкладке «Цели»: ${fmt(settings.kcal)} ккал и ${fmt(settings.p)} г белка.</p>`);}
+function shopList(){
+  const wk=weekMenu(weekStart(cur)),agg={};
+  wk.forEach(d=>d.meals.forEach(m=>m.items.forEach(it=>{agg[it.n]=(agg[it.n]||0)+it.g;})));
+  const groups={};Object.entries(agg).forEach(([n,g])=>{const gr=PBYN[n].g;(groups[gr]=groups[gr]||[]).push([n,g]);});
+  const body=Object.entries(groups).map(([gr,l])=>`<div><h3>${esc(gr)}</h3><ul class="mitems">${l.sort((a,b)=>a[0].localeCompare(b[0],'ru')).map(([n,g])=>`<li><span>${esc(n)}</span><span class="num">${n==='Яйца'?Math.ceil(g/55)+' шт.':(g>=1000?fmt1(g/1000)+' '+(/Молоко|Кефир/.test(n)?'л':'кг'):fmt(g)+' '+(/Молоко|Кефир/.test(n)?'мл':'г'))}</span></li>`).join('')}</ul></div>`).join('');
+  openSheet(`<div class="row"><h2>Покупки на неделю</h2><button type="button" class="x" data-close aria-label="Закрыть">×</button></div>
+   <div id="shopText" style="display:grid;gap:12px">${body}</div>
+   <p class="small muted" style="margin:0">Вес мяса, круп и пасты указан в готовом виде. Сырое мясо при готовке теряет около четверти веса, а крупы при варке становятся в 2,5–3 раза тяжелее — сухих покупай примерно в 3 раза меньше.</p>
+   <button type="button" class="btn" id="shopCopy">Скопировать список</button>`);
+}
+
 /* ---------- day rollover: the app can stay open past midnight ---------- */
 function checkDay(){const t=keyOf(new Date());if(t===TODAY)return;const was=cur===TODAY;TODAY=t;if(was)cur=t;$('slot').value=slotNow();render();exChange(false);}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDay();});
 window.addEventListener('focus',checkDay);setInterval(checkDay,60000);
 /* ---------- boot ---------- */
-function render(){renderHeader();renderToday();renderFood();renderProgToday();renderGym();renderProgress();renderProtCalc();renderPlan();renderProgCard();}
+function render(){renderHeader();renderToday();renderMenu();renderFood();renderProgToday();renderGym();renderProgress();renderProtCalc();renderPlan();renderProgCard();}
 $('slot').value=slotNow();
 setTab(tab);buildProducts();renderGroups();renderRir();exChange(false);fillGoals();render();
 
